@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Media;
 
 namespace MyAPlayer
 {
@@ -14,7 +15,9 @@ namespace MyAPlayer
         private Uri path { get; set; }
         private double width { get; set; }
         private string position { get; set; }
+        private SolidColorBrush currentColor { get; set; }
         private bool isNotDownloading { get; set; }
+        private bool isTopmost { get; set; }
 
         public string Title
         {
@@ -101,6 +104,23 @@ namespace MyAPlayer
 
         }
 
+        public SolidColorBrush CurrentColor
+        {
+            get { return this.currentColor; }
+            set
+            {
+                if (this.currentColor != value)
+                {
+                    this.currentColor = value;
+                    if (PropertyChanged != null)
+                    {
+                        PropertyChanged(this, new PropertyChangedEventArgs("CurrentColor"));
+                    }
+                }
+            }
+
+        }
+
         public bool IsNotDownloading
         {
             get { return this.isNotDownloading; }
@@ -112,6 +132,23 @@ namespace MyAPlayer
                     if (PropertyChanged != null)  
                     {
                         PropertyChanged(this, new PropertyChangedEventArgs("IsNotDownloading"));
+                    }
+                }
+            }
+
+        }
+
+        public bool IsTopmost
+        {
+            get { return this.isTopmost; }
+            set
+            {
+                if (this.isTopmost != value)
+                {
+                    this.isTopmost = value;
+                    if (PropertyChanged != null)
+                    {
+                        PropertyChanged(this, new PropertyChangedEventArgs("IsTopmost"));
                     }
                 }
             }

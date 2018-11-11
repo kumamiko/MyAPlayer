@@ -24,6 +24,8 @@ using FontAwesome.WPF;
 using Microsoft.Win32;
 using MP.Core;
 using Newtonsoft.Json;
+using Digimezzo.Utilities;
+using Digimezzo.Utilities.Utils;
 
 namespace MyAPlayer
 {
@@ -42,6 +44,7 @@ namespace MyAPlayer
         public string songPath = string.Empty;
         public string savePath = string.Empty;
         public int songIndex = 0;
+        public int page = 0;
         public WebClient client = new WebClient();
         public BitmapImage bi;
         public string timeFormat = "mm:ss";
@@ -57,6 +60,7 @@ namespace MyAPlayer
             Artist = "",
             Width = 0,
             Position = "00:00",
+            CurrentColor = new SolidColorBrush(Colors.Gray),
             IsNotDownloading = true
         };
 
@@ -69,6 +73,10 @@ namespace MyAPlayer
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void Window_Loaded(object sender, RoutedEventArgs e)
+        {
             listViewSongList.ItemsSource = mySongList;
             //绑定控件
             txtTitle.DataContext = playerInfo;
@@ -77,6 +85,7 @@ namespace MyAPlayer
             rec.DataContext = playerInfo;
             txtCurrentSeconds.DataContext = playerInfo;
             btnDownload.DataContext = playerInfo;
+            menuTopMost.DataContext = playerInfo;
             //下载完成提示
             client.DownloadFileCompleted += new AsyncCompletedEventHandler(MyDownloadComplete);
 
@@ -84,7 +93,6 @@ namespace MyAPlayer
             LyricControl.SlideDirection = Digimezzo.WPFControls.Enums.SlideDirection.DownToUp;
 
             StartHistoryPlay();
-
         }
 
         public void StartHistoryPlay()
@@ -144,6 +152,7 @@ namespace MyAPlayer
             try { songIndex = int.Parse(IniReadValue("info", "songIndex", iniPath)); } catch { }
             try { this.Top = int.Parse(IniReadValue("info", "posY", iniPath)); } catch { }
             try { this.Left = int.Parse(IniReadValue("info", "posX", iniPath)); } catch { }
+            try { playerInfo.IsTopmost = this.Topmost = bool.Parse(IniReadValue("info", "topmost", iniPath)); } catch { }
         }
 
         /// <summary>
@@ -156,6 +165,7 @@ namespace MyAPlayer
             IniWrite("info", "songIndex", listViewSongList.SelectedIndex.ToString(), iniPath);
             IniWrite("info", "posX", this.Left.ToString(), iniPath);
             IniWrite("info", "posY", this.Top.ToString(), iniPath);
+            IniWrite("info", "topmost", this.Topmost.ToString(), iniPath);
         }
         #endregion
 
@@ -203,16 +213,23 @@ namespace MyAPlayer
         }
         #endregion
 
-        private void rootGrid_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
-        {
-            MediaOpen();
-        }
+        //private void rootGrid_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        //{
+        //    MediaOpen();
+        //}
 
         /// <summary>
         /// 打开本地音乐
         /// </summary>
         private void MediaOpen()
         {
+            haveLyric = false;
+            var txtLyric = new TextBlock
+            {
+                Text = "没有歌词",
+            };
+            LyricControl.Content = txtLyric;
+
             IsApiUsing = false;
             OpenFileDialog file = new OpenFileDialog();
             file.Filter = "mp3|*.mp3";
@@ -316,7 +333,11 @@ namespace MyAPlayer
         DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer(); // 定义一个DT
         private void media_MediaOpened(object sender, RoutedEventArgs e)
         {
-            RandomColor(); //更改进度条颜色
+            //RandomColor(); //更改进度条颜色
+            //进度条变色
+            //rec.Fill = new SolidColorBrush(ImageUtils.GetDominantColor(ImageToByte(bi)));
+            playerInfo.CurrentColor = new SolidColorBrush(ImageUtils.GetDominantColor(ImageToByte(bi)));
+
             playerInfo.Width = 0;
             playerInfo.Position = "00:00";
             if (media.NaturalDuration.HasTimeSpan)
@@ -338,11 +359,13 @@ namespace MyAPlayer
             if(haveLyric && IsShowLyric) FreshLyric(media.Position);
         }
 
-        public async Task AlbumSlideEffect()
+        public void AlbumSlideEffect()
         {
-            var border = new Border();
-            await border.Dispatcher.InvokeAsync(() => border.Background = new ImageBrush(bi)).Task;
-            ContentControl.Content = border;
+            //var border = new Border();
+            //await border.Dispatcher.InvokeAsync(() => border.Background = new ImageBrush(bi)).Task;
+            //border.Background = new ImageBrush(bi);
+            //ContentControl.Content = border;
+            ContentControl.Content = new Border() { Background = new ImageBrush(bi) };
         }
 
         public static string TimeSpanToDateTime(TimeSpan timeSpan, string format = "mm:ss")
@@ -380,6 +403,7 @@ namespace MyAPlayer
         {
             if (IsSearching)
             {
+                btnClearText.Visibility = Visibility.Collapsed;
                 await StoryBoardHelpers.ElementMargin(new Thickness(0), new Thickness(300, 0, 0, 0), 300, txtSearch);
                 IsSearching = false;
             }
@@ -388,6 +412,7 @@ namespace MyAPlayer
                 //txtSearch.Text = string.Empty;
                 await StoryBoardHelpers.ElementMargin(new Thickness(300,0,0,0), new Thickness(0), 300, txtSearch);
                 IsSearching = true;
+                btnClearText.Visibility = Visibility.Visible;
             }
         }
 
@@ -477,7 +502,9 @@ namespace MyAPlayer
                     {
                         if (!string.IsNullOrEmpty(txtSearch.Text))
                         {
-                            GetSongList();
+                            mySongList.Clear();
+                            page = 0;
+                            GetSongList(page++);
                             IsApiUsing = true;
                         }
                     }
@@ -511,7 +538,7 @@ namespace MyAPlayer
                         var path = GetCover(mySongList[listViewSongList.SelectedIndex].apid);
                         if (!string.IsNullOrEmpty(path))
                         {
-                            path += "?param=80x80";
+                            path += "?param=500x500";
                             bi = await GetNewImageAsync(new Uri(path));
                         }
                         else
@@ -523,9 +550,10 @@ namespace MyAPlayer
                     {
                         bi = GetImageFromMp3(mySongList[listViewSongList.SelectedIndex].path);
                     }
+                    
                     PlayAndChangeInfo(mySongList[listViewSongList.SelectedIndex].path);
                     playerInfo.Width = 0;
-                    await AlbumSlideEffect();
+                    AlbumSlideEffect();
                     if (!IsApiUsing) songIndex = listViewSongList.SelectedIndex;
                 }
             }
@@ -551,13 +579,13 @@ namespace MyAPlayer
             }
         }
 
-        public void GetSongList()
+        public void GetSongList(int page)
         {
             if (string.IsNullOrEmpty(txtSearch.Text)) return;
-            mySongList.Clear();
+            
             try
             {
-                var jsonString = MusicApi.Search(txtSearch.Text, 10);
+                var jsonString = MusicApi.Search(txtSearch.Text, 10, 10*(page));
                 dynamic jsonObj = JsonConvert.DeserializeObject(jsonString);
                 var result = jsonObj.result;
                 var songlist = result.songs;
@@ -568,7 +596,7 @@ namespace MyAPlayer
                     var artist = album.artist;
                     mySongList.Add(new Song
                     {
-                        id = j++,
+                        id = 10*page + j++,
                         apid = item.id,
                         title = item.name,
                         path = @"http://music.163.com/song/media/outer/url?id=" + item.id + ".mp3"
@@ -711,6 +739,20 @@ namespace MyAPlayer
             }
         }
 
+        //图片转byte[]   
+        public static byte[] ImageToByte(BitmapImage imageSource)
+        {
+            var encoder = new JpegBitmapEncoder();
+            encoder.Frames.Add(BitmapFrame.Create(imageSource));
+
+            using (var ms = new MemoryStream())
+            {
+                encoder.Save(ms);
+                return ms.ToArray();
+            }
+        }
+
+
         /// <summary>
         /// 刷新歌词
         /// </summary>
@@ -819,6 +861,7 @@ namespace MyAPlayer
             }
         }
 
+
         /// <summary>
         /// If downloading, cancels a download in progress.
         /// </summary>
@@ -830,5 +873,86 @@ namespace MyAPlayer
         //    }
         //}
         #endregion
+
+        #region MenuItem
+        private void menuOpen_Click(object sender, RoutedEventArgs e)
+        {
+            MediaOpen();
+        }
+
+        private void menuSearchMore_Click(object sender, RoutedEventArgs e)
+        {
+            GetSongList(page++);
+        }
+
+        private void menuTopMost_Click(object sender, RoutedEventArgs e)
+        {
+            playerInfo.IsTopmost = this.Topmost = !this.Topmost;
+            
+        }
+
+        private void menuChangeDownloadPath_Click(object sender, RoutedEventArgs e)
+        {
+            System.Windows.Forms.FolderBrowserDialog dialog = new System.Windows.Forms.FolderBrowserDialog();
+            dialog.Description = "请选择下载路径";
+
+            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+                savePath = dialog.SelectedPath + "\\";
+            else return;
+        }
+
+        private void menuAddCoverToFile_Click(object sender, RoutedEventArgs e)
+        {
+            if(AddCoverToMp3(downloadingFilePath))
+            {
+                messGrid.Children.Add(new MessageShow("已添加封面", 3000, true));
+            }
+        }
+        #endregion
+
+        public bool AddCoverToMp3(string filePath)
+        {
+            try
+            {
+                TagLib.File file = TagLib.File.Create(filePath);
+                SetAlbumArt(bi, file);
+                file.Save();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public void SetAlbumArt(BitmapImage bi, TagLib.File file)
+        {
+            byte[] imageBytes;
+
+            try
+            {
+                imageBytes = ImageToByte(bi);
+                TagLib.Id3v2.AttachedPictureFrame cover = new TagLib.Id3v2.AttachedPictureFrame
+                {
+                    Type = TagLib.PictureType.FrontCover,
+                    Description = "Cover",
+                    MimeType = System.Net.Mime.MediaTypeNames.Image.Jpeg,
+                    Data = imageBytes,
+                    TextEncoding = TagLib.StringType.UTF16
+                };
+                file.Tag.Pictures = new TagLib.IPicture[] { cover };
+            }
+            catch {}
+        }
+
+        /// <summary>
+        /// 清空搜索框
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnClearText_Click(object sender, RoutedEventArgs e)
+        {
+            txtSearch.Text = string.Empty;
+        }
     }
 }

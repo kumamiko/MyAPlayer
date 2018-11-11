@@ -39,6 +39,10 @@
     <ApplicationIcon>player.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Digimezzo.Utilities, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Librarys\Digimezzo.Utilities.dll</HintPath>
+    </Reference>
     <Reference Include="Digimezzo.WPFControls, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>Librarys\Digimezzo.WPFControls.dll</HintPath>
@@ -100,6 +104,18 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Page Include="Resources\Styles\AllStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\Styles\ContextMenu.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\Styles\FontStyles.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -124,6 +140,7 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
+    <Resource Include="Resources\Fonts\segmdl2.ttf" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -134,6 +151,7 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\default_cover.jpg" />
+    <Content Include="Librarys\Digimezzo.Utilities.dll" />
     <Content Include="Librarys\Digimezzo.WPFControls.dll" />
     <Resource Include="player.ico" />
   </ItemGroup>

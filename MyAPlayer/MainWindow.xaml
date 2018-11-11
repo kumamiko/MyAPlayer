@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:MyAPlayer"
         xmlns:controls="clr-namespace:Digimezzo.WPFControls;assembly=Digimezzo.WPFControls"
         mc:Ignorable="d" FontWeight="Light" RenderOptions.BitmapScalingMode="HighQuality"
-        Title="MainWindow"  Width="360" MaxHeight="600" WindowStyle="None" AllowsTransparency="True" KeyDown="Window_KeyDown"  Background="Transparent" WindowStartupLocation="CenterScreen" ResizeMode="NoResize">
+        Title="MainWindow"  Width="360" MaxHeight="650" WindowStyle="None" AllowsTransparency="True" KeyDown="Window_KeyDown"  Background="Transparent" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Loaded="Window_Loaded">
     <Window.Resources>
         <Style x:Key="FocusVisual">
             <Setter Property="Control.Template">
@@ -44,12 +44,12 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <EventTrigger RoutedEvent="MouseEnter">
-                                        <BeginStoryboard>
-                                            <Storyboard>
-                                                <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.7" Duration="0:0:0"/>
-                                            </Storyboard>
-                                        </BeginStoryboard>
-                                    </EventTrigger>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.7" Duration="0:0:0"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </EventTrigger>
                             <EventTrigger RoutedEvent="MouseLeave">
                                 <BeginStoryboard>
                                     <Storyboard>
@@ -66,73 +66,73 @@
         <DataTemplate x:Key="dataTemplateSongList" DataType="{x:Type local:Song}">
             <Border BorderThickness="0,0.1,0,0" BorderBrush="#555">
                 <Grid Height="33" Width="343"  Focusable="False">
-                <Grid.Style>
-                    <Style TargetType="{x:Type Grid}">
-                        <Style.Resources>
-                            <SolidColorBrush x:Key="ButtonBrush1" Color="#eee" />
-                            <SolidColorBrush x:Key="ButtonBrush2" Color="Transparent" />
-                            <Storyboard x:Key="OnMouseEnter1">
-                                <ObjectAnimationUsingKeyFrames 
+                    <Grid.Style>
+                        <Style TargetType="{x:Type Grid}">
+                            <Style.Resources>
+                                <SolidColorBrush x:Key="ButtonBrush1" Color="#eee" />
+                                <SolidColorBrush x:Key="ButtonBrush2" Color="Transparent" />
+                                <Storyboard x:Key="OnMouseEnter1">
+                                    <ObjectAnimationUsingKeyFrames 
                                        Storyboard.TargetProperty="Background">
 
-                                    <DiscreteObjectKeyFrame KeyTime="0:0:0"
+                                        <DiscreteObjectKeyFrame KeyTime="0:0:0"
                                     Value="{StaticResource ButtonBrush1}" />
-                                </ObjectAnimationUsingKeyFrames>
-                            </Storyboard>
-                            <Storyboard x:Key="OnMouseLeave1">
-                                <ObjectAnimationUsingKeyFrames 
+                                    </ObjectAnimationUsingKeyFrames>
+                                </Storyboard>
+                                <Storyboard x:Key="OnMouseLeave1">
+                                    <ObjectAnimationUsingKeyFrames 
                                        Storyboard.TargetProperty="Background">
 
-                                    <DiscreteObjectKeyFrame KeyTime="0:0:0"
+                                        <DiscreteObjectKeyFrame KeyTime="0:0:0"
                                     Value="{StaticResource ButtonBrush2}" />
-                                </ObjectAnimationUsingKeyFrames>
-                            </Storyboard>
-                        </Style.Resources>
-                        <Setter Property="Background" Value="Transparent"/>
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding 
-                           RelativeSource={RelativeSource Mode=FindAncestor,
-                           AncestorType={x:Type ListViewItem}},Path=IsSelected}" 
-                 Value="True">
-                                <Setter Property="Background" Value="#eee"/>
-                            </DataTrigger>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="#eee" />
-                            </Trigger>
-                        <!--<EventTrigger RoutedEvent="UIElement.MouseEnter">
-                            <BeginStoryboard Storyboard="{StaticResource OnMouseEnter1}"/>
-                        </EventTrigger>
-                        <EventTrigger RoutedEvent="UIElement.MouseLeave">
-                            <BeginStoryboard Storyboard="{StaticResource OnMouseLeave1}"/>
-                        </EventTrigger>-->
-                        </Style.Triggers>
-                    </Style>
-                </Grid.Style>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="15"/>
-                    <ColumnDefinition MaxWidth="30"/>
-                    <ColumnDefinition />
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
-                <Rectangle Grid.Column="0" Width="3" Height="22" Fill="#555"
-                                   VerticalAlignment="Center" HorizontalAlignment="Left">
-                    <Rectangle.Style>
-                        <Style TargetType="{x:Type Rectangle}">
-                            <Setter Property="Visibility" Value="Hidden"/>
+                                    </ObjectAnimationUsingKeyFrames>
+                                </Storyboard>
+                            </Style.Resources>
+                            <Setter Property="Background" Value="Transparent"/>
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding 
                            RelativeSource={RelativeSource Mode=FindAncestor,
                            AncestorType={x:Type ListViewItem}},Path=IsSelected}" 
                  Value="True">
-                                    <Setter Property="Visibility" Value="Visible"/>
+                                    <Setter Property="Background" Value="#eee"/>
                                 </DataTrigger>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter Property="Background" Value="#eee" />
+                                </Trigger>
+                                <!--<EventTrigger RoutedEvent="UIElement.MouseEnter">
+                            <BeginStoryboard Storyboard="{StaticResource OnMouseEnter1}"/>
+                        </EventTrigger>
+                        <EventTrigger RoutedEvent="UIElement.MouseLeave">
+                            <BeginStoryboard Storyboard="{StaticResource OnMouseLeave1}"/>
+                        </EventTrigger>-->
                             </Style.Triggers>
                         </Style>
-                    </Rectangle.Style>
-                </Rectangle>
-                <TextBlock Grid.Column="1" Text="{Binding id}" VerticalAlignment="Center" Foreground="Gray"/>
-                <TextBlock Grid.Column="2" Text="{Binding title}" ToolTip="{Binding title}" VerticalAlignment="Center" Foreground="Black" HorizontalAlignment="Left"/>
-                <TextBlock Grid.Column="3" Text="{Binding artist}" ToolTip="{Binding artist}" VerticalAlignment="Center" Foreground="Gray" HorizontalAlignment="Right" Margin="0 0 15 0"/>
+                    </Grid.Style>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="15"/>
+                        <ColumnDefinition MaxWidth="30"/>
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions>
+                    <Rectangle Grid.Column="0" Width="3" Height="22" Fill="#555"
+                                   VerticalAlignment="Center" HorizontalAlignment="Left">
+                        <Rectangle.Style>
+                            <Style TargetType="{x:Type Rectangle}">
+                                <Setter Property="Visibility" Value="Hidden"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding 
+                           RelativeSource={RelativeSource Mode=FindAncestor,
+                           AncestorType={x:Type ListViewItem}},Path=IsSelected}" 
+                 Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Rectangle.Style>
+                    </Rectangle>
+                    <TextBlock Grid.Column="1" Text="{Binding id}" VerticalAlignment="Center" Foreground="Gray"/>
+                    <TextBlock Grid.Column="2" Text="{Binding title}" ToolTip="{Binding title}" VerticalAlignment="Center" Foreground="Black" HorizontalAlignment="Left"/>
+                    <TextBlock Grid.Column="3" Text="{Binding artist}" ToolTip="{Binding artist}" VerticalAlignment="Center" Foreground="Gray" HorizontalAlignment="Right" Margin="0 0 15 0"/>
                 </Grid>
             </Border>
         </DataTemplate>
@@ -441,7 +441,7 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
-        
+
         <!--水印文本框-->
         <Style x:Key="WarkTextBoxStyle" TargetType="{x:Type TextBox}">
             <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.WindowBrushKey}}"/>
@@ -501,7 +501,17 @@
                 <RowDefinition Height="66"/>
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <Grid x:Name="rootGrid" Grid.Row="0" Height="66" Width="350" Background="White" MouseMove="Grid_MouseMove" MouseRightButtonUp="rootGrid_MouseRightButtonUp">
+            <Grid x:Name="rootGrid" Grid.Row="0" Height="66" Width="350" Background="White" MouseMove="Grid_MouseMove">
+                <Grid.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem x:Name="menuOpen" Header="打开" Click="menuOpen_Click"/>
+                        <MenuItem x:Name="menuTopMost" Header="窗口置顶" Click="menuTopMost_Click" IsCheckable="True" IsChecked="{Binding Path=IsTopmost,Mode=OneWay}"/>
+                        <Separator/>
+                        <MenuItem x:Name="menuSearchMore" Header="搜索更多" Click="menuSearchMore_Click"/>
+                        <MenuItem x:Name="menuChangeDownloadPath" Header="修改下载路径" Click="menuChangeDownloadPath_Click"/>
+                        <MenuItem x:Name="menuAddCoverToFile" Header="填充封面" Click="menuAddCoverToFile_Click"/>
+                    </ContextMenu>
+                </Grid.ContextMenu>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="66"/>
                     <ColumnDefinition/>
@@ -545,6 +555,13 @@
                             <TextBlock x:Name="txtSinger" FontSize="10" Text="{Binding Path=Artist}" ToolTip="{Binding Path=Artist}" Foreground="#777" Margin="5 0 0 0" VerticalAlignment="Bottom"/>
                         </StackPanel>
                         <TextBox x:Name="txtSearch" Style="{StaticResource WarkTextBoxStyle}" Tag="搜索" BorderThickness="0"  FontSize="20" Margin="300 0 0 0" Background="#F6F6F6" Text="" Padding="0 10 0 0"/>
+                        <Button x:Name="btnClearText" Visibility="Collapsed" Click="btnClearText_Click" HorizontalAlignment="Right" Width="30" Margin="0 0 0 0" Padding="0"  Focusable="False" Style="{StaticResource ButtonStyle}" Background="Transparent" BorderThickness="0">
+                            <Grid>
+                                <!--<fa:FontAwesome FontSize="20" Icon="Close" Foreground="Gray"/>-->
+                                <TextBlock Text="&#xE106;" FontSize="15" Foreground="Gray"
+                                    Style="{StaticResource SegoeAssets}"/>
+                            </Grid>
+                        </Button>
                     </Grid>
                     <Grid Grid.Row="1">
                         <Grid.ColumnDefinitions>
@@ -605,11 +622,11 @@
                         </Grid>
                     </Grid>
                     <Grid Grid.Row="2">
-                        <Rectangle x:Name="rec" Height="3" Width="{Binding Path=Width}"  VerticalAlignment="Bottom" HorizontalAlignment="Left" Fill="LightGray" Opacity="0.8"/>
+                        <Rectangle x:Name="rec" Height="3" Width="{Binding Path=Width}"  VerticalAlignment="Bottom" HorizontalAlignment="Left" Fill="{Binding Path=CurrentColor}" Opacity="0.8"/>
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid x:Name="gridList" Grid.Row="1" Visibility="Collapsed" Width="350" MaxHeight="524" VerticalAlignment="Top">
+            <Grid x:Name="gridList" Grid.Row="1" Visibility="Collapsed" Width="350" MaxHeight="565" VerticalAlignment="Top">
                 <ListView x:Name="listViewSongList" Margin="0" Padding="0" Style="{DynamicResource ListViewStyle}" ItemTemplate="{StaticResource dataTemplateSongList}" BorderThickness="0" FocusVisualStyle="{x:Null}"
                           SelectionChanged="listViewSongList_SelectionChanged">
                     <ListView.ItemContainerStyle>
