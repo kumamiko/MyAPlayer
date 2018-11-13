@@ -78,6 +78,7 @@ namespace MyAPlayer
         {
             listViewSongList.ItemsSource = mySongList;
             //绑定控件
+            this.DataContext = playerInfo;
             txtTitle.DataContext = playerInfo;
             txtSinger.DataContext = playerInfo;
             media.DataContext = playerInfo;
@@ -950,6 +951,7 @@ namespace MyAPlayer
                 };
                 file.Tag.Pictures = new TagLib.IPicture[] { cover };
                 file.Tag.Performers = new string[] { playerInfo.Artist ?? string.Empty };
+                file.Tag.Title = playerInfo.Title;
             }
             catch { }
         }

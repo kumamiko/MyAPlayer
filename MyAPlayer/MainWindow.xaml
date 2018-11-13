@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:MyAPlayer"
         xmlns:controls="clr-namespace:Digimezzo.WPFControls;assembly=Digimezzo.WPFControls"
         mc:Ignorable="d" FontWeight="Light" RenderOptions.BitmapScalingMode="HighQuality"
-        Title="MainWindow"  Width="360" MaxHeight="650" WindowStyle="None" AllowsTransparency="True" KeyDown="Window_KeyDown"  Background="Transparent" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Loaded="Window_Loaded">
+        Title="{Binding Path=Title}"  Width="360" MaxHeight="650" WindowStyle="None" AllowsTransparency="True" KeyDown="Window_KeyDown"  Background="Transparent" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" Loaded="Window_Loaded">
     <Window.Resources>
         <Style x:Key="FocusVisual">
             <Setter Property="Control.Template">
