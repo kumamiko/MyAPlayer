@@ -577,10 +577,12 @@ namespace MyAPlayer
             else
             {
                 dispatcherTimer.Stop();
+                dispatcherTimer.Tick -= new EventHandler(dispatcherTimer_Tick);
                 playerInfo.Width = 0;
                 playerInfo.Position = "00:00";
                 btnPlayOrPause_Click(null, null);
-                listViewSongList.SelectedIndex = -1;
+                media.Close();
+                //listViewSongList.SelectedIndex = -1;
             }
         }
 
