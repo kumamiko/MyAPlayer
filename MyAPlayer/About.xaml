@@ -1,0 +1,92 @@
+﻿<Window x:Class="MyAPlayer.About"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:MyAPlayer"
+        mc:Ignorable="d" FontWeight="Light" Foreground="White"
+        x:Name="this"
+        Width="360" Height="350" WindowStyle="None" AllowsTransparency="True" Background="Transparent" WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        >
+    <Border>
+        <Grid Background="#1A1A1A" Height="340" Width="350">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="40"/>
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid Grid.Row="0" Margin="10" MouseMove="Grid_MouseMove">
+                <TextBlock Text="关于" VerticalAlignment="Center" FontSize="20" Margin="10 0"/>
+                <Button x:Name="btnCloseWindow" HorizontalAlignment="Right" Width="30" Padding="0"  Focusable="False" Click="btnCloseWindow_Click" Style="{StaticResource ButtonNoEffect}" Background="Transparent" BorderThickness="0">
+                    <Grid>
+                        <!--<fa:FontAwesome FontSize="20" Icon="Close" Foreground="Gray"/>-->
+                        <TextBlock Text="&#xE106;" FontSize="15" Foreground="Gray"
+                                    Style="{StaticResource SegoeAssets}"/>
+                    </Grid>
+                </Button>
+            </Grid>
+            <Grid Grid.Row="1" Margin="20">
+                <StackPanel>
+                    <TextBlock Text="组件" VerticalAlignment="Center" FontSize="20"/>
+                    <StackPanel Margin="0 5">
+                        <TextBlock Text="Digimezzo.Utilities" VerticalAlignment="Center" FontSize="12" FontWeight="Bold"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource ButtonNoEffect}" HorizontalAlignment="Left" Click="Button_Click" Tag="https://github.com/digimezzo/Utilities">
+                                <TextBlock Text="网站" FontSize="12" FontWeight="Regular" Foreground="Gray"/>
+                            </Button>
+                            <Button Style="{StaticResource ButtonNoEffect}" HorizontalAlignment="Left" Click="Button_Click" Tag="https://github.com/digimezzo/Utilities/blob/master/LICENSE">
+                                <TextBlock Text="License" FontSize="12" FontWeight="Regular" Foreground="Gray"/>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Margin="0 5">
+                        <TextBlock Text="Digimezzo.WPFControls" VerticalAlignment="Center" FontSize="12" FontWeight="Bold"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource ButtonNoEffect}" HorizontalAlignment="Left" Click="Button_Click" Tag="https://github.com/digimezzo/WPFControls">
+                                <TextBlock Text="网站" FontSize="12" FontWeight="Regular" Foreground="Gray"/>
+                            </Button>
+                            <Button Style="{StaticResource ButtonNoEffect}" HorizontalAlignment="Left" Click="Button_Click" Tag="https://github.com/digimezzo/WPFControls/blob/master/LICENSE">
+                                <TextBlock Text="License" FontSize="12" FontWeight="Regular" Foreground="Gray"/>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Margin="0 5">
+                        <TextBlock Text="FontAwesome.WPF" VerticalAlignment="Center" FontSize="12" FontWeight="Bold"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource ButtonNoEffect}" HorizontalAlignment="Left" Click="Button_Click" Tag="https://github.com/charri/Font-Awesome-WPF/">
+                                <TextBlock Text="网站" FontSize="12" FontWeight="Regular" Foreground="Gray"/>
+                            </Button>
+                            <Button Style="{StaticResource ButtonNoEffect}" HorizontalAlignment="Left" Click="Button_Click" Tag="https://github.com/charri/Font-Awesome-WPF/blob/master/LICENSE">
+                                <TextBlock Text="License" FontSize="12" FontWeight="Regular" Foreground="Gray"/>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Margin="0 5">
+                        <TextBlock Text="taglib-sharp" VerticalAlignment="Center" FontSize="12" FontWeight="Bold"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource ButtonNoEffect}" HorizontalAlignment="Left" Click="Button_Click" Tag="https://github.com/mono/taglib-sharp">
+                                <TextBlock Text="网站" FontSize="12" FontWeight="Regular" Foreground="Gray"/>
+                            </Button>
+                            <Button Style="{StaticResource ButtonNoEffect}" HorizontalAlignment="Left" Click="Button_Click" Tag="https://github.com/mono/taglib-sharp/blob/master/COPYING">
+                                <TextBlock Text="License" FontSize="12" FontWeight="Regular" Foreground="Gray"/>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Margin="0 5">
+                        <TextBlock Text="Newtonsoft.Json" VerticalAlignment="Center" FontSize="12" FontWeight="Bold"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource ButtonNoEffect}" HorizontalAlignment="Left" Click="Button_Click" Tag="https://www.newtonsoft.com/json">
+                                <TextBlock Text="网站" FontSize="12" FontWeight="Regular" Foreground="Gray"/>
+                            </Button>
+                            <Button Style="{StaticResource ButtonNoEffect}" HorizontalAlignment="Left" Click="Button_Click" Tag="https://raw.githubusercontent.com/JamesNK/Newtonsoft.Json/master/LICENSE.md">
+                                <TextBlock Text="License" FontSize="12" FontWeight="Regular" Foreground="Gray"/>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Grid>
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="5" ShadowDepth="1" Direction="270" Opacity="0.3"/>
+        </Border.Effect>
+    </Border>
+</Window>

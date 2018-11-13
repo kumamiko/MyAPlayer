@@ -509,7 +509,8 @@
                         <Separator/>
                         <MenuItem x:Name="menuSearchMore" Header="搜索更多" Click="menuSearchMore_Click"/>
                         <MenuItem x:Name="menuChangeDownloadPath" Header="修改下载路径" Click="menuChangeDownloadPath_Click"/>
-                        <MenuItem x:Name="menuAddCoverToFile" Header="填充封面" Click="menuAddCoverToFile_Click"/>
+                        <!--<MenuItem x:Name="menuAddCoverToFile" Header="填充封面" Click="menuAddCoverToFile_Click"/>-->
+                        <MenuItem x:Name="menuAbout" Header="关于" Click="menuAbout_Click"/>
                     </ContextMenu>
                 </Grid.ContextMenu>
                 <Grid.ColumnDefinitions>
@@ -622,11 +623,11 @@
                         </Grid>
                     </Grid>
                     <Grid Grid.Row="2">
-                        <Rectangle x:Name="rec" Height="3" Width="{Binding Path=Width}"  VerticalAlignment="Bottom" HorizontalAlignment="Left" Fill="{Binding Path=CurrentColor}" Opacity="0.8"/>
+                        <Rectangle x:Name="rec" Height="3" Width="{Binding Width}"  VerticalAlignment="Bottom" HorizontalAlignment="Left" Fill="{Binding Path=CurrentColor}" Opacity="0.8"/>
                     </Grid>
                 </Grid>
             </Grid>
-            <Grid x:Name="gridList" Grid.Row="1" Visibility="Collapsed" Width="350" MaxHeight="565" VerticalAlignment="Top">
+            <Grid x:Name="gridList" Grid.Row="1" Visibility="{Binding IsShowList, Converter={StaticResource BooleanToCollapsedConverter}}" Width="350" MaxHeight="565" VerticalAlignment="Top">
                 <ListView x:Name="listViewSongList" Margin="0" Padding="0" Style="{DynamicResource ListViewStyle}" ItemTemplate="{StaticResource dataTemplateSongList}" BorderThickness="0" FocusVisualStyle="{x:Null}"
                           SelectionChanged="listViewSongList_SelectionChanged">
                     <ListView.ItemContainerStyle>
@@ -643,7 +644,7 @@
                     </ListView.ItemContainerStyle>
                 </ListView>
             </Grid>
-            <Grid x:Name="gridLyric" Grid.Row="1" Visibility="Collapsed" Background="White" Width="350" Height="30" VerticalAlignment="Top">
+            <Grid x:Name="gridLyric" Grid.Row="1" Visibility="{Binding IsShowLyric, Converter={StaticResource BooleanToCollapsedConverter}}" Background="White" Width="350" Height="30" VerticalAlignment="Top">
                 <controls:SlidingContentControl x:Name="LyricControl" Focusable="False" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize = "13"/>
             </Grid>
             <Grid x:Name="messGrid" Grid.Row="0" VerticalAlignment="top" Margin="20 300 0 0" Grid.RowSpan="2"  HorizontalAlignment="Center"/>

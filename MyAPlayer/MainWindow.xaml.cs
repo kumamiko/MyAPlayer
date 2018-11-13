@@ -36,8 +36,6 @@ namespace MyAPlayer
     {
         public bool IsPlaying = false;
         public bool IsSearching = false;
-        public bool IsShowList = false;
-        public bool IsShowLyric = false;
         public bool haveLyric = false;
         public bool IsApiUsing = false;
         public string iniPath = AppDomain.CurrentDomain.BaseDirectory + "config.ini";
@@ -51,6 +49,7 @@ namespace MyAPlayer
         public Lrc lrc = new Lrc();
         public string currentLrc = string.Empty;
         public string downloadingFilePath = string.Empty;
+        public About singletonAbout = null;
 
         private ObservableCollection<Song> mySongList = new ObservableCollection<Song>();
 
@@ -86,6 +85,8 @@ namespace MyAPlayer
             txtCurrentSeconds.DataContext = playerInfo;
             btnDownload.DataContext = playerInfo;
             menuTopMost.DataContext = playerInfo;
+            gridList.DataContext = playerInfo;
+            gridLyric.DataContext = playerInfo;
             //下载完成提示
             client.DownloadFileCompleted += new AsyncCompletedEventHandler(MyDownloadComplete);
 
@@ -153,6 +154,7 @@ namespace MyAPlayer
             try { this.Top = int.Parse(IniReadValue("info", "posY", iniPath)); } catch { }
             try { this.Left = int.Parse(IniReadValue("info", "posX", iniPath)); } catch { }
             try { playerInfo.IsTopmost = this.Topmost = bool.Parse(IniReadValue("info", "topmost", iniPath)); } catch { }
+            try { playerInfo.IsShowList = bool.Parse(IniReadValue("info", "isShowList", iniPath)); } catch { }
         }
 
         /// <summary>
@@ -166,6 +168,7 @@ namespace MyAPlayer
             IniWrite("info", "posX", this.Left.ToString(), iniPath);
             IniWrite("info", "posY", this.Top.ToString(), iniPath);
             IniWrite("info", "topmost", this.Topmost.ToString(), iniPath);
+            IniWrite("info", "isShowList", playerInfo.IsShowList.ToString(), iniPath);
         }
         #endregion
 
@@ -197,7 +200,7 @@ namespace MyAPlayer
                 await SlideAndScale(btnPlayOrPause, this.ActualWidth, 100, 0.6, 1, 45, 18);
             }
         }
-        
+
         public static async Task SlideAndScale(Button btn, double width, float milliSeconds, double scaleFrom, double scaleTo, double topleftFrom, double topleftTo)
         {
             var sb = new Storyboard();
@@ -301,7 +304,8 @@ namespace MyAPlayer
             }
             catch
             {
-                return new Song {
+                return new Song
+                {
                     title = System.IO.Path.GetFileName(path),
                     artist = "未知"
                 };
@@ -347,7 +351,7 @@ namespace MyAPlayer
                 txtTotalSeconds.Text = TimeSpanToDateTime(ts);
             }
             dispatcherTimer.Tick += new EventHandler(dispatcherTimer_Tick); //超过计时间隔时发生
-            dispatcherTimer.Interval = TimeSpan.FromSeconds(0.5); //DT间隔
+            dispatcherTimer.Interval = TimeSpan.FromSeconds(0.1); //DT间隔
             dispatcherTimer.Start(); //DT启动
         }
 
@@ -356,7 +360,7 @@ namespace MyAPlayer
             playerInfo.Position = TimeSpanToDateTime(media.Position);
             playerInfo.Width = media.Position.TotalSeconds / MaxLength * 284; //slider滑动值随播放内容位置变化
 
-            if(haveLyric && IsShowLyric) FreshLyric(media.Position);
+            if (haveLyric && playerInfo.IsShowLyric) FreshLyric(media.Position);
         }
 
         public void AlbumSlideEffect()
@@ -410,7 +414,7 @@ namespace MyAPlayer
             else
             {
                 //txtSearch.Text = string.Empty;
-                await StoryBoardHelpers.ElementMargin(new Thickness(300,0,0,0), new Thickness(0), 300, txtSearch);
+                await StoryBoardHelpers.ElementMargin(new Thickness(300, 0, 0, 0), new Thickness(0), 300, txtSearch);
                 IsSearching = true;
                 btnClearText.Visibility = Visibility.Visible;
             }
@@ -418,17 +422,7 @@ namespace MyAPlayer
 
         private void btnMenu_Click(object sender, RoutedEventArgs e)
         {
-            if (IsShowList)
-            {
-                gridList.Visibility = Visibility.Collapsed;
-                IsShowList = false;
-            }
-            else
-            {
-                listViewSongList.ScrollIntoView(listViewSongList.SelectedItem);
-                gridList.Visibility = Visibility.Visible;
-                IsShowList = true;
-            }
+            playerInfo.IsShowList = !playerInfo.IsShowList;
         }
 
         private void btnExit_Click(object sender, RoutedEventArgs e)
@@ -444,16 +438,7 @@ namespace MyAPlayer
 
         private void btnLyric_Click(object sender, RoutedEventArgs e)
         {
-            if (IsShowLyric)
-            {
-                gridLyric.Visibility = Visibility.Collapsed;
-                IsShowLyric = false;
-            }
-            else
-            {
-                gridLyric.Visibility = Visibility.Visible;
-                IsShowLyric = true;
-            }
+            playerInfo.IsShowLyric = !playerInfo.IsShowLyric;
         }
         #endregion
 
@@ -534,7 +519,8 @@ namespace MyAPlayer
             {
                 if (mySongList.Count > 0)
                 {
-                    if (IsApiUsing) {
+                    if (IsApiUsing)
+                    {
                         var path = GetCover(mySongList[listViewSongList.SelectedIndex].apid);
                         if (!string.IsNullOrEmpty(path))
                         {
@@ -550,7 +536,7 @@ namespace MyAPlayer
                     {
                         bi = GetImageFromMp3(mySongList[listViewSongList.SelectedIndex].path);
                     }
-                    
+
                     PlayAndChangeInfo(mySongList[listViewSongList.SelectedIndex].path);
                     playerInfo.Width = 0;
                     AlbumSlideEffect();
@@ -582,10 +568,10 @@ namespace MyAPlayer
         public void GetSongList(int page)
         {
             if (string.IsNullOrEmpty(txtSearch.Text)) return;
-            
+
             try
             {
-                var jsonString = MusicApi.Search(txtSearch.Text, 10, 10*(page));
+                var jsonString = MusicApi.Search(txtSearch.Text, 10, 10 * (page));
                 dynamic jsonObj = JsonConvert.DeserializeObject(jsonString);
                 var result = jsonObj.result;
                 var songlist = result.songs;
@@ -596,7 +582,7 @@ namespace MyAPlayer
                     var artist = album.artist;
                     mySongList.Add(new Song
                     {
-                        id = 10*page + j++,
+                        id = 10 * page + j++,
                         apid = item.id,
                         title = item.name,
                         path = @"http://music.163.com/song/media/outer/url?id=" + item.id + ".mp3"
@@ -607,8 +593,7 @@ namespace MyAPlayer
                 {
                     listViewSongList.ScrollIntoView(listViewSongList.Items[0]);
 
-                    gridList.Visibility = Visibility.Visible;
-                    IsShowList = true;
+                    if (!playerInfo.IsShowList) playerInfo.IsShowList = true;
                 }
             }
             catch (Exception)
@@ -704,7 +689,8 @@ namespace MyAPlayer
                     string strArtists = string.Join("/", listArtists);
                     mySongList[listViewSongList.SelectedIndex].artist = strArtists;
                 }
-                else {
+                else
+                {
                     mySongList[listViewSongList.SelectedIndex].artist = "未知";
                 }
                 //mySongList[listViewSongList.SelectedIndex].lyric = lyric;
@@ -722,7 +708,8 @@ namespace MyAPlayer
                     };
                     LyricControl.Content = txtLyric;
                 }
-                else {
+                else
+                {
                     haveLyric = false;
                     var txtLyric = new TextBlock
                     {
@@ -760,8 +747,8 @@ namespace MyAPlayer
         public void FreshLyric(TimeSpan ts)
         {
             var lrcs = from n in lrc.LrcWord
-                             where n.Key <= ts.TotalSeconds
-                             select n.Value;
+                       where n.Key <= ts.TotalSeconds
+                       select n.Value;
 
             if (lrcs.Count() > 0)
             {
@@ -770,7 +757,8 @@ namespace MyAPlayer
                 else
                     currentLrc = lrcs.Last();
 
-                var txtLyric = new TextBlock {
+                var txtLyric = new TextBlock
+                {
                     Text = currentLrc,
                 };
                 LyricControl.Content = txtLyric;
@@ -802,11 +790,14 @@ namespace MyAPlayer
             }
         }
 
-        public async void MyDownloadComplete(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
+        public void MyDownloadComplete(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
             var filename = txtTitle.Text + ".mp3";
             if (File.Exists(downloadingFilePath) && new FileInfo(downloadingFilePath).Length > 0)
             {
+                //添加封面
+                AddCoverToMp3(downloadingFilePath);
+
                 messGrid.Children.Add(new MessageShow($"{txtTitle.Text} 下载完成", 3000, true));
             }
             else
@@ -814,10 +805,6 @@ namespace MyAPlayer
                 messGrid.Children.Add(new MessageShow("下载失败", 3000, true));
             }
             playerInfo.IsNotDownloading = true;
-
-            //清空一下
-            await Task.Delay(3000);
-            messGrid.Children.Clear();
         }
 
         private void btnDownload_Click(object sender, RoutedEventArgs e)
@@ -888,7 +875,7 @@ namespace MyAPlayer
         private void menuTopMost_Click(object sender, RoutedEventArgs e)
         {
             playerInfo.IsTopmost = this.Topmost = !this.Topmost;
-            
+
         }
 
         private void menuChangeDownloadPath_Click(object sender, RoutedEventArgs e)
@@ -903,10 +890,20 @@ namespace MyAPlayer
 
         private void menuAddCoverToFile_Click(object sender, RoutedEventArgs e)
         {
-            if(AddCoverToMp3(downloadingFilePath))
+            if (AddCoverToMp3(downloadingFilePath))
             {
                 messGrid.Children.Add(new MessageShow("已添加封面", 3000, true));
             }
+        }
+
+        private void menuAbout_Click(object sender, RoutedEventArgs e)
+        {
+            if (singletonAbout == null)
+            {
+                singletonAbout = new About();
+            }
+            singletonAbout.Show();
+            singletonAbout.Activate();
         }
         #endregion
 
@@ -941,9 +938,11 @@ namespace MyAPlayer
                     TextEncoding = TagLib.StringType.UTF16
                 };
                 file.Tag.Pictures = new TagLib.IPicture[] { cover };
+                file.Tag.Performers = new string[] { playerInfo.Artist ?? string.Empty };
             }
-            catch {}
+            catch { }
         }
+
 
         /// <summary>
         /// 清空搜索框
@@ -954,5 +953,6 @@ namespace MyAPlayer
         {
             txtSearch.Text = string.Empty;
         }
+
     }
 }

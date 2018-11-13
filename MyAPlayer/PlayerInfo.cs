@@ -18,6 +18,8 @@ namespace MyAPlayer
         private SolidColorBrush currentColor { get; set; }
         private bool isNotDownloading { get; set; }
         private bool isTopmost { get; set; }
+        private bool isShowList { get; set; } = false;
+        private bool isShowLyric { get; set; } = false;
 
         public string Title
         {
@@ -149,6 +151,40 @@ namespace MyAPlayer
                     if (PropertyChanged != null)
                     {
                         PropertyChanged(this, new PropertyChangedEventArgs("IsTopmost"));
+                    }
+                }
+            }
+
+        }
+
+        public bool IsShowList
+        {
+            get { return this.isShowList; }
+            set
+            {
+                if (this.isShowList != value)
+                {
+                    this.isShowList = value;
+                    if (PropertyChanged != null)
+                    {
+                        PropertyChanged(this, new PropertyChangedEventArgs("IsShowList"));
+                    }
+                }
+            }
+
+        }
+
+        public bool IsShowLyric
+        {
+            get { return this.isShowLyric; }
+            set
+            {
+                if (this.isShowLyric != value)
+                {
+                    this.isShowLyric = value;
+                    if (PropertyChanged != null)
+                    {
+                        PropertyChanged(this, new PropertyChangedEventArgs("IsShowLyric"));
                     }
                 }
             }
