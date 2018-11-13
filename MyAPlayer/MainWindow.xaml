@@ -501,7 +501,7 @@
                 <RowDefinition Height="66"/>
                 <RowDefinition />
             </Grid.RowDefinitions>
-            <Grid x:Name="rootGrid" Grid.Row="0" Height="66" Width="350" Background="White" MouseMove="Grid_MouseMove">
+            <Grid x:Name="rootGrid" Grid.Row="0" Height="66" Width="350" Background="White" MouseMove="Grid_MouseMove" MouseWheel="rootGrid_MouseWheel">
                 <Grid.ContextMenu>
                     <ContextMenu>
                         <MenuItem x:Name="menuOpen" Header="打开" Click="menuOpen_Click"/>

@@ -91,6 +91,8 @@ namespace MyAPlayer
             //下载完成提示
             client.DownloadFileCompleted += new AsyncCompletedEventHandler(MyDownloadComplete);
 
+            listViewSongList.SelectionChanged += new SelectionChangedEventHandler(ChangeCoverAndLyric);
+
             ContentControl.SlideDirection = Digimezzo.WPFControls.Enums.SlideDirection.DownToUp;
             LyricControl.SlideDirection = Digimezzo.WPFControls.Enums.SlideDirection.DownToUp;
 
@@ -154,6 +156,7 @@ namespace MyAPlayer
             try { songIndex = int.Parse(IniReadValue("info", "songIndex", iniPath)); } catch { }
             try { this.Top = int.Parse(IniReadValue("info", "posY", iniPath)); } catch { }
             try { this.Left = int.Parse(IniReadValue("info", "posX", iniPath)); } catch { }
+            try { media.Volume = double.Parse(IniReadValue("info", "volume", iniPath)); } catch { }
             try { playerInfo.IsTopmost = this.Topmost = bool.Parse(IniReadValue("info", "topmost", iniPath)); } catch { }
             try { playerInfo.IsShowList = bool.Parse(IniReadValue("info", "isShowList", iniPath)); } catch { }
         }
@@ -168,6 +171,7 @@ namespace MyAPlayer
             IniWrite("info", "songIndex", listViewSongList.SelectedIndex.ToString(), iniPath);
             IniWrite("info", "posX", this.Left.ToString(), iniPath);
             IniWrite("info", "posY", this.Top.ToString(), iniPath);
+            IniWrite("info", "volume", media.Volume.ToString("f1"), iniPath);
             IniWrite("info", "topmost", this.Topmost.ToString(), iniPath);
             IniWrite("info", "isShowList", playerInfo.IsShowList.ToString(), iniPath);
         }
@@ -514,38 +518,52 @@ namespace MyAPlayer
             rec.Fill = new SolidColorBrush(Color.FromArgb(255, (byte)R, (byte)G, (byte)B));
         }
 
-        private async void listViewSongList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        private void listViewSongList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             try
             {
                 if (mySongList.Count > 0)
                 {
-                    if (IsApiUsing)
-                    {
-                        var path = GetCover(mySongList[listViewSongList.SelectedIndex].apid);
-                        if (!string.IsNullOrEmpty(path))
-                        {
-                            path += "?param=500x500";
-                            bi = await GetNewImageAsync(new Uri(path));
-                        }
-                        else
-                        {
-                            bi = new BitmapImage(new Uri("pack://application:,,,/images/default_cover.jpg", UriKind.Absolute));
-                        }
-                    }
-                    else
-                    {
-                        bi = GetImageFromMp3(mySongList[listViewSongList.SelectedIndex].path);
-                    }
-
                     PlayAndChangeInfo(mySongList[listViewSongList.SelectedIndex].path);
                     playerInfo.Width = 0;
-                    AlbumSlideEffect();
                     if (!IsApiUsing) songIndex = listViewSongList.SelectedIndex;
                 }
             }
             catch (Exception)
             {
+            }
+        }
+
+        /// <summary>
+        /// 更改封面和歌词
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void ChangeCoverAndLyric(object sender, SelectionChangedEventArgs e)
+        {
+            if (mySongList.Count > 0)
+            {
+                if (IsApiUsing)
+                {
+                    var path = GetCover(mySongList[listViewSongList.SelectedIndex].apid);
+                    if (!string.IsNullOrEmpty(path))
+                    {
+                        path += "?param=500x500";
+                        bi = await GetNewImageAsync(new Uri(path));
+                    }
+                    else
+                    {
+                        bi = new BitmapImage(new Uri("pack://application:,,,/images/default_cover.jpg", UriKind.Absolute));
+                    }
+                    //获取封面的同时更新歌手信息
+                    playerInfo.Artist = mySongList[listViewSongList.SelectedIndex].artist;
+                }
+                else
+                {
+                    bi = GetImageFromMp3(mySongList[listViewSongList.SelectedIndex].path);
+                }
+
+                AlbumSlideEffect();
             }
         }
 
@@ -967,5 +985,32 @@ namespace MyAPlayer
             txtSearch.Text = string.Empty;
         }
 
+        /// <summary>
+        /// 调节音量
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void rootGrid_MouseWheel(object sender, MouseWheelEventArgs e)
+        {
+            if (e.Delta > 0 && this.media.Volume + 0.1 <= 1.0)
+            {
+                this.media.Volume += 0.1;
+                this.messGrid.Children.Add(new MessageShow(string.Format("音量：{0}%", (this.media.Volume * 100.0).ToString()), 2000, true));
+
+            }
+
+            if (e.Delta < 0 && this.media.Volume - 0.1 >= 0.0)
+            {
+                this.media.Volume = (double)((int)(this.media.Volume * 10.0) - 1) / 10.0;
+                if (this.media.Volume <= 0.0)
+                {
+                   this.messGrid.Children.Add(new MessageShow("  静音  ", 1000, true));
+                }
+                else
+                {
+                    this.messGrid.Children.Add(new MessageShow(string.Format("音量：{0}%", (this.media.Volume * 100.0).ToString()), 2000, true));
+                }
+            }
+        }
     }
 }
