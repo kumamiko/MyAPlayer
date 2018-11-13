@@ -541,7 +541,7 @@ namespace MyAPlayer
         /// <param name="e"></param>
         private async void ChangeCoverAndLyric(object sender, SelectionChangedEventArgs e)
         {
-            if (mySongList.Count > 0)
+            if (mySongList.Count > 0 && listViewSongList.SelectedIndex >=0)
             {
                 if (IsApiUsing)
                 {
@@ -577,10 +577,10 @@ namespace MyAPlayer
             else
             {
                 dispatcherTimer.Stop();
-                dispatcherTimer.Tick -= new EventHandler(dispatcherTimer_Tick);
                 playerInfo.Width = 0;
                 playerInfo.Position = "00:00";
                 btnPlayOrPause_Click(null, null);
+                listViewSongList.SelectedIndex = -1;
             }
         }
 
@@ -752,6 +752,9 @@ namespace MyAPlayer
             }
             catch (Exception)
             {
+                haveLyric = false;
+                LyricControl.Content = new TextBlock { Text = "" };
+
                 return string.Empty;
             }
         }
