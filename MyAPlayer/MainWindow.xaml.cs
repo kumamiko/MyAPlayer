@@ -672,6 +672,17 @@ namespace MyAPlayer
                 var detailjsonObj = JsonConvert.DeserializeObject<dynamic>(detailjson);
                 if (detailjsonObj == null) { haveLyric = false; return null; }
                 var artists = detailjsonObj.songs[0].artists;
+                string duration = detailjsonObj.songs[0].duration;
+                if (duration != null)
+                {
+                    try
+                    {
+                        TimeSpan ts = TimeSpan.FromMilliseconds(double.Parse(duration));
+                        MaxLength = ts.TotalSeconds;
+                        txtTotalSeconds.Text = TimeSpanToDateTime(ts);
+                    }
+                    catch { }
+                }
 
                 //获取歌词
                 string lyricjson = MusicApi.Lyric(songId);
