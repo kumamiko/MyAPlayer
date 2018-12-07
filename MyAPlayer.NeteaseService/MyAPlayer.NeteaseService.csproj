@@ -7,8 +7,8 @@
     <ProjectGuid>{F4CDD934-E5CF-4344-9AA6-2F57E134D757}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MP.Core</RootNamespace>
-    <AssemblyName>MP.Core</AssemblyName>
+    <RootNamespace>MyAPlayer.NeteaseService</RootNamespace>
+    <AssemblyName>MyAPlayer.NeteaseService</AssemblyName>
     <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

@@ -1,12 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
-using System.Web;
 
-namespace MP.Core
+namespace MyAPlayer.NeteaseService
 {
     public static class MusicApi
     {
@@ -115,7 +113,7 @@ namespace MP.Core
             req.Headers["Cookie"] = "appver=1.5.2";
             req.Method = config.Method;
             req.AutomaticDecompression = DecompressionMethods.GZip;
-            req.Timeout = 3000; //设置超时时间
+            req.Timeout = 1000; //设置超时时间
             if (isPost)
             {
                 // 写入post请求包

@@ -5,7 +5,7 @@ VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyAPlayer", "MyAPlayer.csproj", "{8FF3CE45-0804-4FE0-A9C1-E9B28D7BE9D6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MP.Core", "..\MP.Core\MP.Core.csproj", "{F4CDD934-E5CF-4344-9AA6-2F57E134D757}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyAPlayer.NeteaseService", "..\MyAPlayer.NeteaseService\MyAPlayer.NeteaseService.csproj", "{F4CDD934-E5CF-4344-9AA6-2F57E134D757}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

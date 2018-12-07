@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace MP.Core
+namespace MyAPlayer.NeteaseService
 {
     /// <summary>
     /// 抽象请求参数模版

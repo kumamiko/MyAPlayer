@@ -11,21 +11,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 using System.Windows.Threading;
-using FontAwesome.WPF;
 using Microsoft.Win32;
-using MP.Core;
 using Newtonsoft.Json;
-using Digimezzo.Utilities;
 using Digimezzo.Utilities.Utils;
+using System.Text.RegularExpressions;
+using MyAPlayer.NeteaseService;
 
 namespace MyAPlayer
 {
@@ -34,23 +29,34 @@ namespace MyAPlayer
     /// </summary>
     public partial class MainWindow : Window
     {
+        public enum RepeatType
+        {
+            NoRepeat,
+            RepeatOne,
+            RepeatAll
+        }
+
         public bool IsPlaying = false;
         public bool IsSearching = false;
         public bool haveLyric = false;
         public bool IsApiUsing = false;
+        public bool IsShowLrc = false;
         public string iniPath = AppDomain.CurrentDomain.BaseDirectory + "config.ini";
         public string songPath = string.Empty;
         public string savePath = string.Empty;
+        public RepeatType currentRepeatType = RepeatType.NoRepeat;
         public int songIndex = 0;
         public int page = 0;
+        public int downloadtimeout = 10;
         public WebClient client = new WebClient();
         public BitmapImage bi;
         public string timeFormat = "mm:ss";
         public Lrc lrc = new Lrc();
+        public string lrcTemp = string.Empty;
         public string currentLrc = string.Empty;
         public string downloadingFilePath = string.Empty;
         public About singletonAbout = null;
-
+        public LyricWindow lyricWindow = new LyricWindow();
         private ObservableCollection<Song> mySongList = new ObservableCollection<Song>();
 
         public PlayerInfo playerInfo = new PlayerInfo
@@ -59,7 +65,6 @@ namespace MyAPlayer
             Artist = "",
             Width = 0,
             Position = "00:00",
-            CurrentColor = new SolidColorBrush(Colors.Gray),
             IsNotDownloading = true
         };
 
@@ -68,6 +73,12 @@ namespace MyAPlayer
 
         [DllImport("kernel32")]
         private static extern long WritePrivateProfileString(string section, string key, string val, string filePath);
+
+        public delegate void ShowLrc(string lrc);
+        public event ShowLrc DoShowLrc;
+
+        public delegate void ShowMsg(string msg);
+        public event ShowMsg DoShowMsg;
 
         public MainWindow()
         {
@@ -82,21 +93,32 @@ namespace MyAPlayer
             txtTitle.DataContext = playerInfo;
             txtSinger.DataContext = playerInfo;
             media.DataContext = playerInfo;
-            rec.DataContext = playerInfo;
             txtCurrentSeconds.DataContext = playerInfo;
             btnDownload.DataContext = playerInfo;
-            menuTopMost.DataContext = playerInfo;
             gridList.DataContext = playerInfo;
-            gridLyric.DataContext = playerInfo;
             //下载完成提示
             client.DownloadFileCompleted += new AsyncCompletedEventHandler(MyDownloadComplete);
 
-            listViewSongList.SelectionChanged += new SelectionChangedEventHandler(ChangeCoverAndLyric);
-
             ContentControl.SlideDirection = Digimezzo.WPFControls.Enums.SlideDirection.DownToUp;
-            LyricControl.SlideDirection = Digimezzo.WPFControls.Enums.SlideDirection.DownToUp;
 
             StartHistoryPlay();
+
+            //歌词窗口
+            if (IsShowLrc) this.lyricWindow.Show();
+            this.lyricWindow.ShowInTaskbar = false;
+            this.lyricWindow.Topmost = true;
+            //委托
+            this.DoShowLrc += (lrc) => lyricWindow.ShowLyc(lrc);
+            DoShowMsg += (msg) => mcMsg.ShowMsg(msg);
+
+            //下载超时时间
+            if (downloadtimeout < 10) {
+                downloadtimeout = 10;
+                DoShowMsg("自定义下载超时时间过短 已恢复为10秒");
+            } 
+            downloadTimer.Tick += new EventHandler(downloadTimer_Tick);
+            downloadTimer.Interval = TimeSpan.FromSeconds(downloadtimeout);
+           
         }
 
         public void StartHistoryPlay()
@@ -107,11 +129,7 @@ namespace MyAPlayer
                 if (Directory.Exists(songPath))
                 {
                     mySongList.Clear();
-                    GetAllFilePath(songPath);
-                    if (mySongList.Count > songIndex)
-                    {
-                        listViewSongList.SelectedIndex = songIndex;
-                    }
+                    Task.Run(() => GetAllFilePath(songPath));
                 }
             }
             catch (Exception)
@@ -156,9 +174,14 @@ namespace MyAPlayer
             try { songIndex = int.Parse(IniReadValue("info", "songIndex", iniPath)); } catch { }
             try { this.Top = int.Parse(IniReadValue("info", "posY", iniPath)); } catch { }
             try { this.Left = int.Parse(IniReadValue("info", "posX", iniPath)); } catch { }
+            try { this.lyricWindow.Left = int.Parse(IniReadValue("info", "lrcposX", iniPath)); } catch { }
+            try { this.lyricWindow.Top = int.Parse(IniReadValue("info", "lrcposY", iniPath)); } catch { }
+            try { this.lyricWindow.Width = double.Parse(IniReadValue("info", "lrcwidth", iniPath)); } catch { }
+            try { IsShowLrc = bool.Parse(IniReadValue("info", "isShowLrc", iniPath)); } catch { }
             try { media.Volume = double.Parse(IniReadValue("info", "volume", iniPath)); } catch { }
             try { playerInfo.IsTopmost = this.Topmost = bool.Parse(IniReadValue("info", "topmost", iniPath)); } catch { }
             try { playerInfo.IsShowList = bool.Parse(IniReadValue("info", "isShowList", iniPath)); } catch { }
+            try { downloadtimeout = int.Parse(IniReadValue("info", "downloadtimeout", iniPath)); } catch { }
         }
 
         /// <summary>
@@ -171,9 +194,14 @@ namespace MyAPlayer
             IniWrite("info", "songIndex", listViewSongList.SelectedIndex.ToString(), iniPath);
             IniWrite("info", "posX", this.Left.ToString(), iniPath);
             IniWrite("info", "posY", this.Top.ToString(), iniPath);
+            IniWrite("info", "lrcposX", this.lyricWindow.Left.ToString(), iniPath);
+            IniWrite("info", "lrcposY", this.lyricWindow.Top.ToString(), iniPath);
+            IniWrite("info", "lrcwidth", this.lyricWindow.Width.ToString(), iniPath);
             IniWrite("info", "volume", media.Volume.ToString("f1"), iniPath);
             IniWrite("info", "topmost", this.Topmost.ToString(), iniPath);
             IniWrite("info", "isShowList", playerInfo.IsShowList.ToString(), iniPath);
+            IniWrite("info", "isShowLrc", IsShowLrc.ToString(), iniPath);
+            IniWrite("info", "downloadtimeout", downloadtimeout.ToString(), iniPath);
         }
         #endregion
 
@@ -231,18 +259,18 @@ namespace MyAPlayer
         /// </summary>
         private void MediaOpen()
         {
-            haveLyric = false;
-            var txtLyric = new TextBlock
-            {
-                Text = "没有歌词",
-            };
-            LyricControl.Content = txtLyric;
 
-            IsApiUsing = false;
             OpenFileDialog file = new OpenFileDialog();
             file.Filter = "mp3|*.mp3";
             if (file.ShowDialog() == true)
             {
+                haveLyric = false;
+                IsApiUsing = false;
+
+                //清空旧歌词,显示空
+                lrc.LrcWord.Clear();
+                DoShowLrc("");
+
                 if (File.Exists(file.FileName))
                 {
                     songPath = System.IO.Path.GetDirectoryName(file.FileName);
@@ -273,9 +301,17 @@ namespace MyAPlayer
                 if (files[i].Extension == ".mp3")
                 {
                     var songinfo = GetSongInfoFromPath(files[i].FullName);
-                    mySongList.Add(new Song { id = j++, title = songinfo.title, artist = songinfo.artist, path = files[i].FullName });
+                    this.Dispatcher.Invoke(() => mySongList.Add(new Song { id = j++, title = songinfo.title, artist = songinfo.artist, path = files[i].FullName }));
                 }
             }
+
+            this.Dispatcher.Invoke(() =>
+            {
+                if (mySongList.Count > songIndex)
+                {
+                    listViewSongList.SelectedIndex = songIndex;
+                }
+            });
         }
 
         /// <summary>
@@ -319,11 +355,6 @@ namespace MyAPlayer
 
         public void PlayAndChangeInfo(string str)
         {
-            //new Action(async () => {
-            //    await media.Dispatcher.InvokeAsync(() => { media.Source = new Uri(str); }).Task;
-            //    await txtTitle.Dispatcher.InvokeAsync(() => { txtTitle.Text = mySongList[listViewSongList.SelectedIndex].title; txtTitle.ToolTip = txtTitle.Text; }).Task;
-            //    await txtSinger.Dispatcher.InvokeAsync(() => { txtSinger.Text = mySongList[listViewSongList.SelectedIndex].artist; txtSinger.ToolTip = txtSinger.Text; }).Task;
-            //})();            
             media.Stop();
             dispatcherTimer.Stop();
             dispatcherTimer.Tick -= new EventHandler(dispatcherTimer_Tick);
@@ -342,10 +373,8 @@ namespace MyAPlayer
         DispatcherTimer dispatcherTimer = new System.Windows.Threading.DispatcherTimer(); // 定义一个DT
         private void media_MediaOpened(object sender, RoutedEventArgs e)
         {
-            //RandomColor(); //更改进度条颜色
-            //进度条变色
-            //rec.Fill = new SolidColorBrush(ImageUtils.GetDominantColor(ImageToByte(bi)));
-            playerInfo.CurrentColor = new SolidColorBrush(ImageUtils.GetDominantColor(ImageToByte(bi)));
+            //更改颜色
+            Task.Run(() => InterpolateAccentColorAsync(ImageUtils.GetDominantColor(ImageToByte(bi))));
 
             playerInfo.Width = 0;
             playerInfo.Position = "00:00";
@@ -360,12 +389,40 @@ namespace MyAPlayer
             dispatcherTimer.Start(); //DT启动
         }
 
+        private async void InterpolateAccentColorAsync(Color accentColor)
+        {
+            Color InterpolateColor(Color from, Color to, double progress)
+            {
+                return from + ((to - from) * (float)progress);
+            }
+
+            await Task.Run(async () =>
+            {
+                int loop = 0;
+                int loopMax = 30;
+                var oldColor = (Color)Application.Current.Resources["Color_Accent"];
+
+                while (loop < loopMax)
+                {
+                    loop++;
+                    Color color = InterpolateColor(oldColor, accentColor, loop / (double)loopMax);
+                    Application.Current.Resources["Color_Accent"] = color;
+                    Application.Current.Resources["Brush_Accent"] = new SolidColorBrush(color);
+                    await Task.Delay(7);
+                }
+            });
+        }
+
         private void dispatcherTimer_Tick(object sender, EventArgs e)
         {
             playerInfo.Position = TimeSpanToDateTime(media.Position);
             playerInfo.Width = media.Position.TotalSeconds / MaxLength * 284; //slider滑动值随播放内容位置变化
 
-            if (haveLyric && playerInfo.IsShowLyric) FreshLyric(media.Position);
+            var currentPosition = media.Position;
+            var currentlrc = this.lrc;
+            if (haveLyric && IsShowLrc)
+                Task.Run(() => FreshLyric(currentPosition, currentlrc));
+
         }
 
         public void AlbumSlideEffect()
@@ -433,6 +490,7 @@ namespace MyAPlayer
         private void btnExit_Click(object sender, RoutedEventArgs e)
         {
             Saveini();
+            this.lyricWindow.Close();
             Application.Current.Shutdown();
         }
 
@@ -443,7 +501,17 @@ namespace MyAPlayer
 
         private void btnLyric_Click(object sender, RoutedEventArgs e)
         {
-            playerInfo.IsShowLyric = !playerInfo.IsShowLyric;
+            IsShowLrc = !IsShowLrc;
+            if (IsShowLrc)
+            {
+                btnLyric.ToolTip = "关闭歌词";
+                lyricWindow.Show();
+            }
+            else
+            {
+                btnLyric.ToolTip = "显示歌词";
+                lyricWindow.Hide();
+            }
         }
         #endregion
 
@@ -525,6 +593,9 @@ namespace MyAPlayer
                 if (mySongList.Count > 0)
                 {
                     PlayAndChangeInfo(mySongList[listViewSongList.SelectedIndex].path);
+
+                    Task.Factory.StartNew(() => ChangeCoverAndLyric());
+
                     playerInfo.Width = 0;
                     if (!IsApiUsing) songIndex = listViewSongList.SelectedIndex;
                 }
@@ -539,36 +610,52 @@ namespace MyAPlayer
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void ChangeCoverAndLyric(object sender, SelectionChangedEventArgs e)
+        private void ChangeCoverAndLyric()
         {
-            if (mySongList.Count > 0 && listViewSongList.SelectedIndex >=0)
+            DispatchService.Invoke(async () =>
             {
-                if (IsApiUsing)
+                if (mySongList.Count > 0 && listViewSongList.SelectedIndex >= 0)
                 {
-                    var path = GetCover(mySongList[listViewSongList.SelectedIndex].apid);
-                    if (!string.IsNullOrEmpty(path))
+                    if (IsApiUsing)
                     {
-                        path += "?param=500x500";
-                        bi = await GetNewImageAsync(new Uri(path));
+                        var path = GetCover(mySongList[listViewSongList.SelectedIndex].apid);
+                        if (!string.IsNullOrEmpty(path))
+                        {
+                            path += "?param=500x500";
+                            bi = await GetNewImageAsync(new Uri(path));
+                        }
+                        else
+                        {
+                            bi = new BitmapImage(new Uri("pack://application:,,,/images/default_cover.jpg", UriKind.Absolute));
+                        }
+                        //获取封面的同时更新歌手信息
+                        playerInfo.Artist = mySongList[listViewSongList.SelectedIndex].artist;
                     }
                     else
                     {
-                        bi = new BitmapImage(new Uri("pack://application:,,,/images/default_cover.jpg", UriKind.Absolute));
-                    }
-                    //获取封面的同时更新歌手信息
-                    playerInfo.Artist = mySongList[listViewSongList.SelectedIndex].artist;
-                }
-                else
-                {
-                    bi = GetImageFromMp3(mySongList[listViewSongList.SelectedIndex].path);
-                }
+                        string path = mySongList[listViewSongList.SelectedIndex].path;
+                        string lrcPath = path.Replace(".mp3", ".lrc");
 
-                AlbumSlideEffect();
-            }
+                        bi = GetImageFromMp3(path);
+                        //尝试获取本地歌词并显示
+                        if (File.Exists(lrcPath))
+                        {
+                            haveLyric = true;
+                            lrc = Lrc.InitLrc(path.Replace(".mp3", ".lrc"));
+                        }
+                        else haveLyric = false;
+
+                        DoShowLrc("");
+                    }
+
+                    AlbumSlideEffect();
+                }
+            });
         }
 
         private void media_MediaEnded(object sender, RoutedEventArgs e)
         {
+            if (Repeat()) return;
 
             if (listViewSongList.SelectedIndex + 1 < mySongList.Count)
             {
@@ -588,38 +675,45 @@ namespace MyAPlayer
 
         public void GetSongList(int page)
         {
-            if (string.IsNullOrEmpty(txtSearch.Text)) return;
-
-            try
+            DispatchService.Invoke(() =>
             {
-                var jsonString = MusicApi.Search(txtSearch.Text, 10, 10 * (page));
-                dynamic jsonObj = JsonConvert.DeserializeObject(jsonString);
-                var result = jsonObj.result;
-                var songlist = result.songs;
-                int j = 1;
-                foreach (var item in songlist)
+                if (string.IsNullOrEmpty(txtSearch.Text)) return;
+
+
+                try
                 {
-                    var album = item.album;
-                    var artist = album.artist;
-                    mySongList.Add(new Song
+                    var jsonString = MusicApi.Search(txtSearch.Text, 10, 10 * (page));
+                    dynamic jsonObj = JsonConvert.DeserializeObject(jsonString);
+                    var result = jsonObj.result;
+                    var songlist = result.songs;
+                    int j = 1;
+                    foreach (var item in songlist)
                     {
-                        id = 10 * page + j++,
-                        apid = item.id,
-                        title = item.name,
-                        path = @"http://music.163.com/song/media/outer/url?id=" + item.id + ".mp3"
-                    });
-                }
-                //Listview回到顶端
-                if (mySongList.Count > 0)
-                {
-                    listViewSongList.ScrollIntoView(listViewSongList.Items[0]);
+                        var album = item.album;
+                        var artist = album.artist;
+                        DispatchService.Invoke(() =>
+                        {
+                            mySongList.Add(new Song
+                            {
+                                id = 10 * page + j++,
+                                apid = item.id,
+                                title = item.name,
+                                path = @"http://music.163.com/song/media/outer/url?id=" + item.id + ".mp3"
+                            });
+                        });
+                    }
+                    //Listview回到顶端
+                    if (mySongList.Count > 0)
+                    {
+                        listViewSongList.ScrollIntoView(listViewSongList.Items[0]);
 
-                    if (!playerInfo.IsShowList) playerInfo.IsShowList = true;
+                        if (!playerInfo.IsShowList) playerInfo.IsShowList = true;
+                    }
                 }
-            }
-            catch (Exception)
-            {
-            }
+                catch (Exception)
+                {
+                }
+            });
         }
 
         /// <summary>
@@ -693,6 +787,7 @@ namespace MyAPlayer
                 var detailjsonObj = JsonConvert.DeserializeObject<dynamic>(detailjson);
                 if (detailjsonObj == null) { haveLyric = false; return null; }
                 var artists = detailjsonObj.songs[0].artists;
+                var album = detailjsonObj.songs[0].album.name;
                 string duration = detailjsonObj.songs[0].duration;
                 if (duration != null)
                 {
@@ -705,11 +800,17 @@ namespace MyAPlayer
                     catch { }
                 }
 
+                if (album != null)
+                {
+                    playerInfo.Album = album;
+                }
+
                 //获取歌词
                 string lyricjson = MusicApi.Lyric(songId);
                 var lyricjsonObj = JsonConvert.DeserializeObject<dynamic>(lyricjson);
                 string lyric = string.Empty;
-                if (lyricjsonObj != null && lyricjsonObj.nolyric == null && lyricjsonObj.uncollected == null) lyric = lyricjsonObj.lrc.lyric;
+                if (lyricjsonObj != null && lyricjsonObj.nolyric == null && lyricjsonObj.uncollected == null) lyric = lrcTemp = lyricjsonObj.lrc.lyric;
+                else lyric = lrcTemp = string.Empty;
 
                 List<string> listArtists = new List<string>();
                 if (artists != null)
@@ -725,29 +826,27 @@ namespace MyAPlayer
                 {
                     mySongList[listViewSongList.SelectedIndex].artist = "未知";
                 }
+
+
                 //mySongList[listViewSongList.SelectedIndex].lyric = lyric;
 
                 if (!string.IsNullOrEmpty(lyric))
                 {
-                    byte[] array = Encoding.Default.GetBytes(lyric);
-                    MemoryStream stream = new MemoryStream(array);
+                    //byte[] array = Lrc.ByteArrayCut(Encoding.Default.GetBytes(lyric), 0x3f);
+                    //将默认编码转到Unicode
+                    byte[] arraydefalut = Encoding.UTF8.GetBytes(lyric);
+                    byte[] arrayunicode = Encoding.Convert(Encoding.UTF8, Encoding.Unicode, arraydefalut);
+
+                    MemoryStream stream = new MemoryStream(arrayunicode);
                     lrc = Lrc.InitLrc(stream);
                     haveLyric = true;
                     //有歌词
-                    var txtLyric = new TextBlock
-                    {
-                        Text = "",
-                    };
-                    LyricControl.Content = txtLyric;
+                    DoShowLrc("");
                 }
                 else
                 {
                     haveLyric = false;
-                    var txtLyric = new TextBlock
-                    {
-                        Text = "没有歌词",
-                    };
-                    LyricControl.Content = txtLyric;
+                    DoShowLrc("没有歌词");
                 }
 
                 return detailjsonObj.songs[0].album.picUrl;
@@ -755,10 +854,17 @@ namespace MyAPlayer
             catch (Exception)
             {
                 haveLyric = false;
-                LyricControl.Content = new TextBlock { Text = "" };
+                DoShowLrc("歌词获取失败");
 
                 return string.Empty;
             }
+        }
+
+        public static string EncodingConvert(Encoding src, Encoding desc, string srcString)
+        {
+            byte[] arraysrc = src.GetBytes(srcString);
+            byte[] arraydesc = Encoding.Convert(src, desc, arraysrc);
+            return desc.GetString(arraydesc);
         }
 
         //图片转byte[]   
@@ -779,10 +885,10 @@ namespace MyAPlayer
         /// 刷新歌词
         /// </summary>
         /// <param name="ts"></param>
-        public void FreshLyric(TimeSpan ts)
+        public void FreshLyric(TimeSpan ts, Lrc lrc)
         {
             var lrcs = from n in lrc.LrcWord
-                       where n.Key <= ts.TotalSeconds
+                       where n.Key <= ts.TotalMilliseconds
                        select n.Value;
 
             if (lrcs.Count() > 0)
@@ -792,11 +898,8 @@ namespace MyAPlayer
                 else
                     currentLrc = lrcs.Last();
 
-                var txtLyric = new TextBlock
-                {
-                    Text = currentLrc,
-                };
-                LyricControl.Content = txtLyric;
+                if (DoShowLrc != null)
+                    this.Dispatcher.Invoke(() => DoShowLrc(currentLrc));
             }
         }
 
@@ -808,9 +911,10 @@ namespace MyAPlayer
         /// <param name="Filename">下载后的存放地址</param>
         public void DownloadFile(Uri url, string filename)
         {
+
             if (File.Exists(filename))
             {
-                messGrid.Children.Add(new MessageShow($"{txtTitle.Text} 文件已存在", 3000, true));
+                DoShowMsg($"{txtTitle.Text} 文件已存在");
                 return;
             }
             if (!Directory.Exists(savePath))
@@ -821,23 +925,50 @@ namespace MyAPlayer
             {
                 client.DownloadFileAsync(url, filename);
                 playerInfo.IsNotDownloading = false;
-                messGrid.Children.Add(new MessageShow("开始下载", 3000, true));
+                DoShowMsg("开始下载");
+
+                downloadTimer.Start();
             }
+        }
+
+        //作为下载歌曲的超时检测
+        DispatcherTimer downloadTimer = new DispatcherTimer();
+        private void downloadTimer_Tick(object sender, EventArgs e)
+        {
+            this.client.CancelAsync();
         }
 
         public void MyDownloadComplete(object sender, System.ComponentModel.AsyncCompletedEventArgs e)
         {
-            var filename = txtTitle.Text + ".mp3";
-            if (File.Exists(downloadingFilePath) && new FileInfo(downloadingFilePath).Length > 0)
-            {
-                //添加封面
-                AddCoverToMp3(downloadingFilePath);
+            downloadTimer.Stop();
 
-                messGrid.Children.Add(new MessageShow($"{txtTitle.Text} 下载完成", 3000, true));
+            if (e.Cancelled)
+            {
+                DoShowMsg("下载超时");
+                playerInfo.IsNotDownloading = true;
+                File.Delete(downloadingFilePath);
+                return;
+            }
+
+            var filename = txtTitle.Text + ".mp3";
+            if (File.Exists(downloadingFilePath))
+            {
+                if (new FileInfo(downloadingFilePath).Length > 0)
+                {
+                    //添加封面
+                    AddCoverToMp3(downloadingFilePath);
+
+                    DoShowMsg($"{txtTitle.Text} 下载完成");
+                }
+                else
+                {
+                    DoShowMsg("下载失败");
+                    File.Delete(downloadingFilePath);
+                }
             }
             else
             {
-                messGrid.Children.Add(new MessageShow("下载失败", 3000, true));
+                DoShowMsg("下载失败");
             }
             playerInfo.IsNotDownloading = true;
         }
@@ -848,19 +979,6 @@ namespace MyAPlayer
             {
                 if (IsApiUsing)
                 {
-                    //如果正在下载弹出是否取消
-                    //if (!playerInfo.IsNotDownloading)
-                    //{
-                    //    if (System.Windows.MessageBox.Show("是否取消下载", "确定", MessageBoxButton.OKCancel) == MessageBoxResult.OK)
-                    //    {
-                    //        Cancel();
-                    //        messGrid.Children.Add(new MessageShow("取消下载", 3000, true));
-                    //        await Task.Delay(1000);
-                    //        //取消并删除路径下的文件
-                    //        if (File.Exists(downloadingFilePath))
-                    //            File.Delete(downloadingFilePath);
-                    //    }
-                    //}
 
                     if (!Directory.Exists(savePath))
                     {
@@ -870,30 +988,52 @@ namespace MyAPlayer
                         if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
                             savePath = dialog.SelectedPath + "\\";
                         else return;
+
                     }
-                    var filename = txtTitle.Text + ".mp3";
+
+                    var filename = RemoveSpecialCharacter(txtTitle.Text) + ".mp3";
                     downloadingFilePath = savePath + filename;
+
+                    //保存歌词到文件
+                    if (haveLyric && lrcTemp.Length > 0)
+                        Task.Run(() => SaveLrcToFile(downloadingFilePath, EncodingConvert(Encoding.UTF8, Encoding.Unicode, lrcTemp)));
+
+
                     DownloadFile(media.Source, downloadingFilePath);
                 }
                 else
-                    messGrid.Children.Add(new MessageShow("正在播放本地音乐", 3000, true));
+                    DoShowMsg("正在播放本地音乐");
             }
             catch (Exception)
             {
             }
         }
 
+        /// <summary>
+        /// 去掉音乐标题的特殊字符，否则无法新建文件
+        /// </summary>
+        /// <param name="beforeFileName"></param>
+        /// <returns></returns>
+        public static string RemoveSpecialCharacter(string beforeFileName)
+        {
+            string reg = @"\:" + @"|\;" + @"|\/" + @"|\\" + @"|\|" + @"|\," + @"|\*" + @"|\?" + @"|\""" + @"|\<" + @"|\>";//特殊字符
+            Regex r = new Regex(reg);
+            return r.Replace(beforeFileName, "");//将特殊字符替换为""
+        }
 
         /// <summary>
-        /// If downloading, cancels a download in progress.
+        /// 保存歌词到文件
         /// </summary>
-        //public virtual void Cancel()
-        //{
-        //    if (client != null)
-        //    {
-        //        client.CancelAsync();
-        //    }
-        //}
+        /// <param name="path"></param>
+        /// <returns></returns>
+        public void SaveLrcToFile(string path, string lrc)
+        {
+            using (var sw = new StreamWriter(path.Replace(".mp3", ".lrc")))
+            {
+
+                sw.Write(lrc);
+            }
+        }
         #endregion
 
         #region MenuItem
@@ -904,7 +1044,7 @@ namespace MyAPlayer
 
         private void menuSearchMore_Click(object sender, RoutedEventArgs e)
         {
-            GetSongList(page++);
+            Task.Factory.StartNew(() => GetSongList(page++));
         }
 
         private void menuTopMost_Click(object sender, RoutedEventArgs e)
@@ -915,10 +1055,10 @@ namespace MyAPlayer
 
         private void menuChangeDownloadPath_Click(object sender, RoutedEventArgs e)
         {
-            System.Windows.Forms.FolderBrowserDialog dialog = new System.Windows.Forms.FolderBrowserDialog();
+            Ookii.Dialogs.Wpf.VistaFolderBrowserDialog dialog = new Ookii.Dialogs.Wpf.VistaFolderBrowserDialog();
             dialog.Description = "请选择下载路径";
 
-            if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            if ((bool)dialog.ShowDialog(this))
                 savePath = dialog.SelectedPath + "\\";
             else return;
         }
@@ -927,7 +1067,7 @@ namespace MyAPlayer
         {
             if (AddCoverToMp3(downloadingFilePath))
             {
-                messGrid.Children.Add(new MessageShow("已添加封面", 3000, true));
+                DoShowMsg("已添加封面");
             }
         }
 
@@ -975,6 +1115,7 @@ namespace MyAPlayer
                 file.Tag.Pictures = new TagLib.IPicture[] { cover };
                 file.Tag.Performers = new string[] { playerInfo.Artist ?? string.Empty };
                 file.Tag.Title = playerInfo.Title;
+                file.Tag.Album = playerInfo.Album;
             }
             catch { }
         }
@@ -1000,7 +1141,7 @@ namespace MyAPlayer
             if (e.Delta > 0 && this.media.Volume + 0.1 <= 1.0)
             {
                 this.media.Volume += 0.1;
-                this.messGrid.Children.Add(new MessageShow(string.Format("音量：{0}%", (this.media.Volume * 100.0).ToString()), 2000, true));
+                DoShowMsg($"音量：{this.media.Volume * 100.0}%");
 
             }
 
@@ -1009,13 +1150,65 @@ namespace MyAPlayer
                 this.media.Volume = (double)((int)(this.media.Volume * 10.0) - 1) / 10.0;
                 if (this.media.Volume <= 0.0)
                 {
-                   this.messGrid.Children.Add(new MessageShow("  静音  ", 1000, true));
+                    DoShowMsg("  静音  ");
                 }
                 else
                 {
-                    this.messGrid.Children.Add(new MessageShow(string.Format("音量：{0}%", (this.media.Volume * 100.0).ToString()), 2000, true));
+                    DoShowMsg($"音量：{this.media.Volume * 100.0}%");
                 }
             }
         }
+
+        #region 循环
+        private void MenuNoRepeat_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentRepeatType == RepeatType.NoRepeat) return;
+            currentRepeatType = RepeatType.NoRepeat;
+            playerInfo.IsNoRepeat = true;
+            playerInfo.IsRepeatOne = playerInfo.IsRepeatAll = false;
+            DoShowMsg("  不循环  ");
+        }
+
+        private void MenuRepeatOne_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentRepeatType == RepeatType.RepeatOne) return;
+            currentRepeatType = RepeatType.RepeatOne;
+            playerInfo.IsRepeatOne = true;
+            playerInfo.IsNoRepeat = playerInfo.IsRepeatAll = false;
+            DoShowMsg("  单曲循环  ");
+        }
+
+        private void MenuRepeatAll_Click(object sender, RoutedEventArgs e)
+        {
+            if (currentRepeatType == RepeatType.RepeatAll) return;
+            currentRepeatType = RepeatType.RepeatAll;
+            playerInfo.IsRepeatAll = true;
+            playerInfo.IsNoRepeat = playerInfo.IsRepeatOne = false;
+            DoShowMsg("  列表循环  ");
+        }
+
+        public bool Repeat()
+        {
+            bool ret = false;
+            switch (currentRepeatType)
+            {
+                case RepeatType.RepeatOne:
+                    media.Position = TimeSpan.FromSeconds(1);
+                    ret = true;
+                    break;
+                case RepeatType.RepeatAll:
+                    if (listViewSongList.SelectedIndex == listViewSongList.Items.Count - 1)
+                    {
+                        listViewSongList.SelectedIndex = 0;
+                        ret = true;
+                    }
+                    break;
+                case RepeatType.NoRepeat:
+                default:
+                    break;
+            }
+            return ret;
+        }
+        #endregion
     }
 }

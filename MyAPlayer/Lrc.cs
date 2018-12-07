@@ -48,7 +48,7 @@ namespace MyAPlayer
             using (FileStream fs = new FileStream(LrcPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             {
                 string line;
-                using (StreamReader sr = new StreamReader(fs, Encoding.Default))
+                using (StreamReader sr = new StreamReader(fs, Encoding.UTF8))
                 {
                     while ((line = sr.ReadLine()) != null)
                     {
@@ -83,7 +83,7 @@ namespace MyAPlayer
                                 MatchCollection mct = regextime.Matches(line);
                                 foreach (Match item in mct)
                                 {
-                                    double time = TimeSpan.Parse("00:" + item.Groups[1].Value).TotalSeconds;
+                                    double time = TimeSpan.Parse("00:" + item.Groups[1].Value).TotalMilliseconds;
                                     dicword.Add(time, word);
                                 }
                             }
@@ -110,7 +110,7 @@ namespace MyAPlayer
             Dictionary<double, string> dicword = new Dictionary<double, string>();
 
             string line;
-            using (StreamReader sr = new StreamReader(LrcStream, Encoding.Default))
+            using (StreamReader sr = new StreamReader(LrcStream, Encoding.Unicode))
             {
                 while ((line = sr.ReadLine()) != null)
                 {
@@ -145,7 +145,7 @@ namespace MyAPlayer
                             MatchCollection mct = regextime.Matches(line);
                             foreach (Match item in mct)
                             {
-                                double time = TimeSpan.Parse("00:" + item.Groups[1].Value).TotalSeconds;
+                                double time = TimeSpan.Parse("00:" + item.Groups[1].Value).TotalMilliseconds;
                                 dicword.Add(time, word);
                             }
                         }
@@ -160,6 +160,8 @@ namespace MyAPlayer
             return lrc;
         }
 
+         
+
         /// <summary>
         /// 处理信息(私有方法)
         /// </summary>
@@ -168,6 +170,31 @@ namespace MyAPlayer
         static string SplitInfo(string line)
         {
             return line.Substring(line.IndexOf(":") + 1).TrimEnd(']');
+        }
+
+        /// <summary>
+        /// 去掉byte[]中特定的byte
+        /// </summary>
+        /// <param name="SourceByteArray"> 需要处理的byte[]</param>
+        /// <param name="cutbyte">byte[] 中需要除去的特定 byte (此处: byte cutbyte = 0x00 ;) </param>
+        /// <returns> 返回处理完毕的byte[] </returns>
+        public static byte[] ByteArrayCut(byte[] SourceByteArray, byte cutbyte)
+        {
+            List<byte> list = new List<byte>();
+            list.AddRange(SourceByteArray);
+            for (int i = list.Count - 1; i >= 0; i--)
+            {
+                if (list[i] == cutbyte)
+                    list.RemoveAt(i);
+            }
+            byte[] LastByteArray = new byte[list.Count];
+            for (int i = 0; i < list.Count; i++)
+            {
+                LastByteArray[i] = list[i];
+            }
+            list.Clear();
+
+            return LastByteArray;
         }
     }
 }

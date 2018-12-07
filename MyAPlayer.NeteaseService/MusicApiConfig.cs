@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace MP.Core
+namespace MyAPlayer.NeteaseService
 {
     /// <summary>
     /// 请求网易云音乐的接口配置

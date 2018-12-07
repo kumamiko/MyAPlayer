@@ -12,14 +12,16 @@ namespace MyAPlayer
     {
         private string title { get; set; }
         private string artist { get; set; }
+        private string album { get; set; }
         private Uri path { get; set; }
         private double width { get; set; }
         private string position { get; set; }
-        private SolidColorBrush currentColor { get; set; }
+        private bool isNoRepeat { get; set; } = true;
+        private bool isRepeatOne { get; set; } = false;
+        private bool isRepeatAll { get; set; } = false;
         private bool isNotDownloading { get; set; }
         private bool isTopmost { get; set; }
         private bool isShowList { get; set; } = false;
-        private bool isShowLyric { get; set; } = false;
 
         public string Title
         {
@@ -49,6 +51,23 @@ namespace MyAPlayer
                     if (PropertyChanged != null)  
                     {
                         PropertyChanged(this, new PropertyChangedEventArgs("Artist"));
+                    }
+                }
+            }
+
+        }
+
+        public string Album
+        {
+            get { return this.album; }
+            set
+            {
+                if (this.album != value)
+                {
+                    this.album = value;
+                    if (PropertyChanged != null)
+                    {
+                        PropertyChanged(this, new PropertyChangedEventArgs("Album"));
                     }
                 }
             }
@@ -106,17 +125,51 @@ namespace MyAPlayer
 
         }
 
-        public SolidColorBrush CurrentColor
+        public bool IsNoRepeat
         {
-            get { return this.currentColor; }
+            get { return this.isNoRepeat; }
             set
             {
-                if (this.currentColor != value)
+                if (this.isNoRepeat != value)
                 {
-                    this.currentColor = value;
+                    this.isNoRepeat = value;
                     if (PropertyChanged != null)
                     {
-                        PropertyChanged(this, new PropertyChangedEventArgs("CurrentColor"));
+                        PropertyChanged(this, new PropertyChangedEventArgs("IsNoRepeat"));
+                    }
+                }
+            }
+
+        }
+
+        public bool IsRepeatOne
+        {
+            get { return this.isRepeatOne; }
+            set
+            {
+                if (this.isRepeatOne != value)
+                {
+                    this.isRepeatOne = value;
+                    if (PropertyChanged != null)
+                    {
+                        PropertyChanged(this, new PropertyChangedEventArgs("IsRepeatOne"));
+                    }
+                }
+            }
+
+        }
+
+        public bool IsRepeatAll
+        {
+            get { return this.isRepeatAll; }
+            set
+            {
+                if (this.isRepeatAll != value)
+                {
+                    this.isRepeatAll = value;
+                    if (PropertyChanged != null)
+                    {
+                        PropertyChanged(this, new PropertyChangedEventArgs("IsRepeatAll"));
                     }
                 }
             }
@@ -168,23 +221,6 @@ namespace MyAPlayer
                     if (PropertyChanged != null)
                     {
                         PropertyChanged(this, new PropertyChangedEventArgs("IsShowList"));
-                    }
-                }
-            }
-
-        }
-
-        public bool IsShowLyric
-        {
-            get { return this.isShowLyric; }
-            set
-            {
-                if (this.isShowLyric != value)
-                {
-                    this.isShowLyric = value;
-                    if (PropertyChanged != null)
-                    {
-                        PropertyChanged(this, new PropertyChangedEventArgs("IsShowLyric"));
                     }
                 }
             }

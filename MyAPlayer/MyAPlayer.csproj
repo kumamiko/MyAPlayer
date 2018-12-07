@@ -41,24 +41,32 @@
   <ItemGroup>
     <Reference Include="Digimezzo.Utilities, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>Librarys\Digimezzo.Utilities.dll</HintPath>
+      <HintPath>Libraries\Digimezzo.Utilities.dll</HintPath>
     </Reference>
     <Reference Include="Digimezzo.WPFControls, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>Librarys\Digimezzo.WPFControls.dll</HintPath>
+      <HintPath>Libraries\Digimezzo.WPFControls.dll</HintPath>
     </Reference>
     <Reference Include="FontAwesome.WPF, Version=4.7.0.37774, Culture=neutral, PublicKeyToken=0758b07a11a4f466, processorArchitecture=MSIL">
       <HintPath>packages\FontAwesome.WPF.4.7.0.9\lib\net40\FontAwesome.WPF.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Hardcodet.Wpf.TaskbarNotification, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Hardcodet.NotifyIcon.Wpf.1.0.8\lib\net451\Hardcodet.Wpf.TaskbarNotification.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="Ookii.Dialogs.Wpf, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Ookii.Dialogs.Wpf.1.0.0\lib\net45\Ookii.Dialogs.Wpf.dll</HintPath>
     </Reference>
     <Reference Include="policy.2.0.taglib-sharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=db62eba44689b5b0, processorArchitecture=MSIL">
       <HintPath>packages\taglib.2.1.0.0\lib\policy.2.0.taglib-sharp.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Design" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
     <Reference Include="Microsoft.CSharp" />
@@ -84,10 +92,15 @@
     <Compile Include="About.xaml.cs">
       <DependentUpon>About.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Converters\NegateBooleanConverter.cs" />
     <Compile Include="Converters\BooleanToCollapsedConverter.cs" />
+    <Compile Include="DispatchService.cs" />
     <Compile Include="Lrc.cs" />
-    <Compile Include="MessageShow.xaml.cs">
-      <DependentUpon>MessageShow.xaml</DependentUpon>
+    <Compile Include="LyricWindow.xaml.cs">
+      <DependentUpon>LyricWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="MessageControl.xaml.cs">
+      <DependentUpon>MessageControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="PlayerInfo.cs" />
     <Compile Include="Song.cs" />
@@ -99,6 +112,10 @@
     <Page Include="Converters\Converters.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="LyricWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -112,13 +129,17 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="MessageShow.xaml">
+    <Page Include="MessageControl.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Resources\Styles\AllStyles.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Resources\Styles\ColorAndBrush.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Resources\Styles\ContextMenu.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -131,6 +152,10 @@
     <Page Include="Resources\Styles\Others.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Resources\Styles\ScrollBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
     </Page>
   </ItemGroup>
   <ItemGroup>
@@ -167,14 +192,14 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="images\default_cover.jpg" />
-    <Content Include="Librarys\Digimezzo.Utilities.dll" />
-    <Content Include="Librarys\Digimezzo.WPFControls.dll" />
+    <Content Include="Libraries\Digimezzo.Utilities.dll" />
+    <Content Include="Libraries\Digimezzo.WPFControls.dll" />
     <Resource Include="player.ico" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\MP.Core\MP.Core.csproj">
+    <ProjectReference Include="..\MyAPlayer.NeteaseService\MyAPlayer.NeteaseService.csproj">
       <Project>{f4cdd934-e5cf-4344-9aa6-2f57e134d757}</Project>
-      <Name>MP.Core</Name>
+      <Name>MyAPlayer.NeteaseService</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

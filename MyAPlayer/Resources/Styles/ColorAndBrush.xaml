@@ -1,0 +1,32 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:local="clr-namespace:MyAPlayer.Resources.Styles">
+    <!-- Palette -->
+    <Color x:Key="Color_White">#FFFFFF</Color>
+    <Color x:Key="Color_Black">#000000</Color>
+    <Color x:Key="Color_BlackInvisible">#00000000</Color>
+    <Color x:Key="Color_Grey">#CCCCCC</Color>
+    <Color x:Key="Color_Accent">#888</Color>
+    
+    <!-- Brushes -->
+    <SolidColorBrush x:Key="Brush_ComboBoxText" Color="{DynamicResource Color_White}"/>
+    <SolidColorBrush x:Key="Brush_WindowButtonCoverPictureText" Color="{DynamicResource Color_White}"/>
+    <SolidColorBrush x:Key="Brush_RegularButtonText" Color="{DynamicResource Color_White}"/>
+    <SolidColorBrush x:Key="Brush_ColorSchemeSelectorIcon" Color="{DynamicResource Color_White}"/>
+    <SolidColorBrush x:Key="Brush_ImageOverlayText" Color="{DynamicResource Color_White}"/>
+    <SolidColorBrush x:Key="Brush_SemanticZoomText" Color="{DynamicResource Color_White}"/>
+    <SolidColorBrush x:Key="Brush_StatustText" Color="{DynamicResource Color_White}"/>
+    <SolidColorBrush x:Key="Brush_WindowButtonHoveredIcon" Color="{DynamicResource Color_White}"/>
+    <SolidColorBrush x:Key="Brush_WindowButtonPressedIcon" Color="{DynamicResource Color_White}"/>
+    <SolidColorBrush x:Key="Brush_WindowButtonPressedBackground" Color="{DynamicResource Color_Accent}" Opacity="0.8"/>
+    <SolidColorBrush x:Key="Brush_WindowButtonAccentIcon" Color="{DynamicResource Color_White}"/>
+    <SolidColorBrush x:Key="Brush_WindowIcon" Color="{DynamicResource Color_White}"/>
+    <SolidColorBrush x:Key="Brush_ContextMenuSeparator" Color="{DynamicResource Color_Grey}"/>
+    <SolidColorBrush x:Key="Brush_ContextMenuButton" Color="{DynamicResource Color_Grey}"/>
+    <SolidColorBrush x:Key="Brush_ContextMenuBackground" Color="{DynamicResource Color_White}"/>
+    <SolidColorBrush x:Key="Brush_ContextMenuText" Color="{DynamicResource Color_Black}"/>
+    <SolidColorBrush x:Key="Brush_ContextMenuTextSelected" Color="{DynamicResource Color_White}"/>
+    <SolidColorBrush x:Key="Brush_Accent" Color="{DynamicResource Color_Accent}"/>
+    <SolidColorBrush x:Key="Brush_ToolTipText" Color="{DynamicResource Color_White}"/>
+    <SolidColorBrush x:Key="Brush_ListHeaderComboBoxItemSelected" Color="{DynamicResource Color_White}"/>
+</ResourceDictionary>

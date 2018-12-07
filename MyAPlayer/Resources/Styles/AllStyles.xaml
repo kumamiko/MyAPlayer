@@ -3,5 +3,6 @@
         <ResourceDictionary Source="/MyAPlayer;component/Resources/Styles/ContextMenu.xaml" />
         <ResourceDictionary Source="/MyAPlayer;component/Resources/Styles/FontStyles.xaml" />
         <ResourceDictionary Source="/MyAPlayer;component/Resources/Styles/Others.xaml" />
+        <ResourceDictionary Source="/MyAPlayer;component/Resources/Styles/ScrollBar.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

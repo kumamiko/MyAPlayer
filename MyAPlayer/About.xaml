@@ -6,10 +6,10 @@
         xmlns:local="clr-namespace:MyAPlayer"
         mc:Ignorable="d" FontWeight="Light" Foreground="White"
         x:Name="this"
-        Width="360" Height="350" WindowStyle="None" AllowsTransparency="True" Background="Transparent" WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
+        Width="360" Height="500" WindowStyle="None" AllowsTransparency="True" Background="Transparent" WindowStartupLocation="CenterScreen" ResizeMode="NoResize"
         >
     <Border>
-        <Grid Background="#1A1A1A" Height="340" Width="350">
+        <Grid Background="#1A1A1A" Height="490" Width="350">
             <Grid.RowDefinitions>
                 <RowDefinition Height="40"/>
                 <RowDefinition />
@@ -79,6 +79,39 @@
                             </Button>
                             <Button Style="{StaticResource ButtonNoEffect}" HorizontalAlignment="Left" Click="Button_Click" Tag="https://raw.githubusercontent.com/JamesNK/Newtonsoft.Json/master/LICENSE.md">
                                 <TextBlock Text="License" FontSize="12" FontWeight="Regular" Foreground="Gray"/>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Margin="0 5">
+                        <TextBlock Text="Ookii.Dialogs.Wpf" VerticalAlignment="Center" FontSize="12" FontWeight="Bold"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource ButtonNoEffect}" HorizontalAlignment="Left" Click="Button_Click" Tag="https://github.com/caioproiete/ookii-dialogs-wpf">
+                                <TextBlock Text="网站" FontSize="12" FontWeight="Regular" Foreground="Gray"/>
+                            </Button>
+                            <Button Style="{StaticResource ButtonNoEffect}" HorizontalAlignment="Left" Click="Button_Click" Tag="https://github.com/caioproiete/ookii-dialogs-wpf/blob/master/LICENSE">
+                                <TextBlock Text="License" FontSize="12" FontWeight="Regular" Foreground="Gray"/>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Margin="0 5">
+                        <TextBlock Text="Hardcodet.NotifyIcon.Wpf" VerticalAlignment="Center" FontSize="12" FontWeight="Bold"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource ButtonNoEffect}" HorizontalAlignment="Left" Click="Button_Click" Tag="http://www.hardcodet.net/wpf-notifyicon">
+                                <TextBlock Text="网站" FontSize="12" FontWeight="Regular" Foreground="Gray"/>
+                            </Button>
+                            <Button Style="{StaticResource ButtonNoEffect}" HorizontalAlignment="Left" Click="Button_Click" Tag="https://www.codeproject.com/info/cpol10.aspx">
+                                <TextBlock Text="License" FontSize="12" FontWeight="Regular" Foreground="Gray"/>
+                            </Button>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Margin="0 5">
+                        <TextBlock Text="MusicAPI" VerticalAlignment="Center" FontSize="12" FontWeight="Bold"/>
+                        <StackPanel Orientation="Horizontal">
+                            <Button Style="{StaticResource ButtonNoEffect}" HorizontalAlignment="Left" Click="Button_Click" Tag="https://github.com/javaSwing/MusicAPI">
+                                <TextBlock Text="网站" FontSize="12" FontWeight="Regular" Foreground="Gray"/>
+                            </Button>
+                            <Button Style="{StaticResource ButtonNoEffect}" IsEnabled="False" HorizontalAlignment="Left" Click="Button_Click" Tag="">
+                                <TextBlock Text="License" FontSize="12" FontWeight="Regular" Foreground="Yellow"/>
                             </Button>
                         </StackPanel>
                     </StackPanel>

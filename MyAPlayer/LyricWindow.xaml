@@ -1,0 +1,89 @@
+﻿<Window x:Class="MyAPlayer.LyricWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:controls="clr-namespace:Digimezzo.WPFControls;assembly=Digimezzo.WPFControls"
+        xmlns:local="clr-namespace:MyAPlayer"
+        mc:Ignorable="d"
+        Title="LyricWindow" Height="100" WindowStyle="None" AllowsTransparency="True" Background="Transparent">
+    <Window.Triggers>
+        <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard>
+                <Storyboard>
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity" Storyboard.TargetName="gridMask"
+                                     Duration="0:0:0.3" To="0.3" />
+                    <DoubleAnimation Storyboard.TargetProperty="Opacity" Storyboard.TargetName="gridMask"
+                                     Duration="0:0:0.3" BeginTime="0:0:0.3" To="0" />
+                </Storyboard>
+            </BeginStoryboard>
+        </EventTrigger>
+    </Window.Triggers>
+    <Grid MouseMove="Grid_MouseMove">
+        <Border>
+            <Border.Effect>
+                 <DropShadowEffect BlurRadius="7" ShadowDepth="2" Direction="270" />
+            </Border.Effect>
+            <controls:SlidingContentControl x:Name="LrcContentControl" VerticalAlignment="Center" HorizontalAlignment="Center" Focusable="False"
+                EasingAmplitude="0" FontSize="50" Foreground="White" VerticalContentAlignment="Center" FontWeight="Light" FontFamily="微软雅黑"
+                SlideDirection="DownToUp" />    
+        </Border>
+        <Grid x:Name="gridMask" Background="White" Opacity="0">
+            <Grid.Triggers>
+                <EventTrigger RoutedEvent="MouseEnter">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Duration="0:0:0.2" Storyboard.TargetProperty="Opacity" To="0.3"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+                <EventTrigger RoutedEvent="MouseLeave">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Duration="0:0:0.3" Storyboard.TargetProperty="Opacity" To="0"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Grid.Triggers>
+        </Grid>
+        <Border Name="ResizeBottomRight" MouseMove="ResizePressed"
+                    MouseDown="ResizePressed" Height="15" Width="15" 
+                    HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,3,3" RenderTransformOrigin="0.5,0.5">
+            <Border.Triggers>
+                <EventTrigger RoutedEvent="MouseEnter">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity" Storyboard.TargetName="gridMask"
+                                     Duration="0:0:0.2" To="0.3" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+                <EventTrigger RoutedEvent="MouseLeave">
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Duration="0:0:0.3" Storyboard.TargetName="gridMask" Storyboard.TargetProperty="Opacity" To="0"/>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </EventTrigger>
+            </Border.Triggers>
+            <Border.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform/>
+                    <RotateTransform Angle="88.182"/>
+                    <TranslateTransform/>
+                </TransformGroup>
+            </Border.RenderTransform>
+            <Border.Background>
+                <DrawingBrush>
+                    <DrawingBrush.Drawing>
+                        <GeometryDrawing Geometry="M96,128 L896,928 96,128 z M352,384 L128,160 172.19048,160 352,160 352,384 z M608,640 L384,416 608,416 608,640 z M608,384 L384,384 384,160 608,160 608,384 z M864,896 L640,672 864,672 864,896 z M864,640 L640,640 640,416 864,416 864,640 z M864,384 L640,384 640,160 864,160 864,384 z" Brush="White"></GeometryDrawing>
+                    </DrawingBrush.Drawing>
+                </DrawingBrush>
+            </Border.Background>
+            <Border.Effect>
+                <DropShadowEffect  ShadowDepth="3" Direction="90" />
+            </Border.Effect>
+        </Border>
+    </Grid>
+</Window>
